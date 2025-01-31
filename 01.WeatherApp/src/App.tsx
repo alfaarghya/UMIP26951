@@ -1,9 +1,12 @@
-const App = () => {
+import "./App.css";
+import Weather from "./UI/weather";
+
+function App() {
   return (
-    <div className="text-4xl text-center bg-blue-300">
-      <h1>Weather App ⛅</h1>
-    </div>
-  )
+    <>
+      <Weather />
+    </>
+  );
 }
 
 export default App;
