@@ -38,19 +38,49 @@ const Calculator: React.FC = () => {
 
   //handle button click
   const handleButtonClick = useCallback((value: string) => {
-    //clear current input
-    if (value === "C") {
+    if (value === "C") { //clear current input
       setCurrentInput("0");
-    } else if (value === "=") {
+    } else if (value === "←") { //backspace
+      setCurrentInput((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
+    } else if (value === "=") { //evaluate
       try {
         //evaluate input
         const result = evaluate(currentInput);
         //set history
         setHistory((prev) => [`${currentInput} = ${result}`, ...prev]);
+        //set current as result
         setCurrentInput(result.toString());
       } catch {
         setCurrentInput("Error");
       }
+    } else if (value === "√") { //square root
+      try {
+        //evaluate square root
+        const result = evaluate(`sqrt(${currentInput})`);
+        //set history
+        setHistory((prev) => [`√(${currentInput}) = ${result}`, ...prev]);
+        //set current as result
+        setCurrentInput(result.toString());
+      } catch {
+        setCurrentInput("Error");
+      }
+    } else if (value === "%") { //percentage
+      try {
+        //evaluate percentage
+        const result = evaluate(`(${currentInput})/100`);
+        //set history
+        setHistory((prev) => [`${currentInput}% = ${result}`, ...prev]);
+        //set current as result
+        setCurrentInput(result.toString());
+      } catch {
+        setCurrentInput("Error");
+      }
+    } else if (value === "xʸ") { //power
+      setCurrentInput((prev) => `${prev}^`);
+    } else if (value === "log") { //logarithm
+      setCurrentInput((prev) => `log(${prev})`);
+    } else if (value === "eˣ") { //exponential
+      setCurrentInput((prev) => `exp(${prev})`);
     } else {
       //set current input
       setCurrentInput((prev) => (prev === "0" || prev === "Error" ? value : prev + value));
@@ -66,19 +96,26 @@ const Calculator: React.FC = () => {
   //handle key press
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     const { key } = event;
-    const validKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "+", "-", "*", "/", "(", ")", "Enter", "=", "Backspace", "Escape"];
+    const validKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "+", "-", "*", "/", "(", ")", "Enter", "=", "Backspace", "Escape", "^", "l", "e"];
 
     //check: if key is not valid
     if (!validKeys.includes(key)) return;
 
-    //handle: enter, equals, backspace, escape
+    //handle: enter, equals, backspace, escape, power, log, exponential
     if (key === "Enter" || key === "=") {
       handleButtonClick("=");
     } else if (key === "Backspace") {
-      setCurrentInput((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
+      handleButtonClick("←");
     } else if (key === "Escape") {
       handleButtonClick("C");
-    } else {
+    } else if (key === "^") {
+      handleButtonClick("xʸ");
+    } else if (key === "l") {
+      handleButtonClick("log");
+    } else if (key === "e") {
+      handleButtonClick("eˣ");
+    }
+    else {
       handleButtonClick(key);
     }
   }, [handleButtonClick]);
@@ -107,9 +144,12 @@ const Calculator: React.FC = () => {
           </div>
           {/* display input & output */}
           <Display value={currentInput} />
-          <div className="grid grid-cols-4 gap-2 mt-4">
-            {["(", ")", "C", "⌫", "/", "7", "8", "9", "*", "4", "5", "6", "-", "1", "2", "3", "+", ".", "0", "="]
-              .map((item) => (
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            {["(", ")", "C", "←", "/",
+              "7", "8", "9", "*", "√",
+              "4", "5", "6", "-", "%",
+              "1", "2", "3", "+", "xʸ",
+              ".", "0", "=", "log", "eˣ"].map((item) => (
                 // number & operator buttons
                 <Button key={item} value={item} onClick={handleButtonClick} />
               ))}
