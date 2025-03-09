@@ -23,7 +23,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <main className="w-screen h-screen flex flex-col items-center justify-center">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
