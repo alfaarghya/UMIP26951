@@ -70,3 +70,19 @@ yarn install
 yarn run dev
 
 ```
+
+# 03.Tic-Tac-Toe
+
+### Run the App locally
+
+```bash
+#go to the 03.tic-tac-toe
+cd 03.tic-tac-toe
+
+#install dependency
+yarn install
+
+#run the app
+yarn run dev
+
+```
