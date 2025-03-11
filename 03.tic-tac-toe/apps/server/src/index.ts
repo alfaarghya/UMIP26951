@@ -14,85 +14,116 @@ const io = new Server(httpServer, {
 
 app.use(cors());
 
-// Store players in each room
-const rooms: { [key: string]: string[] } = {};
+// Store players in each room as { socketId: playerName }
+const rooms: { 
+  [key: string]: { 
+    players: { [socketId: string]: string };
+    turn: string;
+  } 
+} = {};
 
 io.on("connection", (socket) => {
   console.log(`🔗 User connected: ${socket.id}`);
 
-  // Handle joining a room
-  socket.on("join-room", (roomId) => {
-    if (!rooms[roomId]) rooms[roomId] = []; // Initialize room if it doesn't exist
+  // Handle joining a room with name
+  socket.on("join-room", ({ roomId, playerName }) => {
+    if (!rooms[roomId]) {
+      rooms[roomId] = { players: {}, turn: "X" }; // Initialize room if it doesn't exist
+    }
 
     // Prevent adding the same player twice
-    if (rooms[roomId].includes(socket.id)) {
+    if (rooms[roomId].players[socket.id]) {
       socket.emit("already-in-room", { message: "You're already in this room!" });
       return;
     }
 
     // Limit room to 2 players
-    if (rooms[roomId].length >= 2) {
+    if (Object.keys(rooms[roomId].players).length >= 2) {
       socket.emit("room-full", { message: "Room is full! Try another room." });
       return;
     }
 
-    // Add player and join the room
-    rooms[roomId].push(socket.id);
+    // Add player with name and join the room
+    rooms[roomId].players[socket.id] = playerName;
     socket.join(roomId);
-    console.log(`🏠 ${socket.id} joined room: ${roomId}`);
+    console.log(`🏠 ${playerName} (${socket.id}) joined room: ${roomId}`);
 
-    io.to(roomId).emit("player-joined", { players: rooms[roomId] });
+    // Notify all players in the room
+    io.to(roomId).emit("player-joined", { 
+      players: Object.values(rooms[roomId].players) 
+    });
 
-    // If the room has exactly 2 players now, notify the opponent
-    if (rooms[roomId].length === 2) {
-      const opponentId = rooms[roomId].find((id) => id !== socket.id);
-      if (opponentId) {
-        io.to(opponentId).emit("opponent-joined", { message: "Your opponent has joined the game!" });
-      }
+    // If two players have joined, notify them
+    if (Object.keys(rooms[roomId].players).length === 2) {
+      io.to(roomId).emit("game-start", { 
+        message: `Game started! ${rooms[roomId].players[socket.id]} (X) goes first.`,
+        turn: "X"
+      });
     }
   });
 
   // Handle a move made by a player
   socket.on("make-move", ({ roomId, index, player }) => {
-    io.to(roomId).emit("move-made", { index, player });
+    if (!rooms[roomId]) return;
+
+    const playerName = rooms[roomId].players[socket.id];
+    io.to(roomId).emit("move-made", { index, player, playerName });
+
+    // Switch turn and notify players
+    rooms[roomId].turn = player === "X" ? "O" : "X";
+    io.to(roomId).emit("turn-change", { 
+      nextPlayer: rooms[roomId].turn 
+    });
   });
 
-  // Handle leaving the room
-  socket.on("leave-room", (roomId) => {
-    socket.leave(roomId);
+ // Handle leaving the room
+  const removePlayerFromRoom = (socketId: string, roomId: string) => {
     if (rooms[roomId]) {
-      rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
+      const playerName = rooms[roomId].players[socketId];
+      delete rooms[roomId].players[socketId];
 
-      console.log(`🚪 ${socket.id} left room: ${roomId}`);
-      io.to(roomId).emit("player-left", { message: "A player left the game." });
+      console.log(`🚪 ${socketId} (${playerName}) left room: ${roomId}`);
+      io.to(roomId).emit("player-left", { message: `${playerName} left the game.` });
 
-      if (rooms[roomId].length === 0) {
-        delete rooms[roomId]; // Cleanup empty rooms
+      // If the room is empty, delete it
+      if (Object.keys(rooms[roomId].players).length === 0) {
+        console.log(`🗑️ Room ${roomId} deleted.`);
+        delete rooms[roomId];
+      } else {
+        // Assign the turn to the remaining player
+        rooms[roomId].turn = "X"; // Reset to X
+        io.to(roomId).emit("turn-change", { nextPlayer: rooms[roomId].turn });
       }
     }
+  };
+
+  // Handle leaving the room
+  socket.on("leave-room", (roomId) => {  
+    removePlayerFromRoom(socket.id, roomId);
+    socket.leave(roomId);
   });
 
   // Handle restart game
   socket.on("restart-game", (roomId) => {
-    io.to(roomId).emit("restart-game");
+    if (rooms[roomId]) {
+      rooms[roomId].turn = "X"; // Reset turn to X
+      io.to(roomId).emit("restart-game", { message: "Game restarted!", turn: "X" });
+    }
   });
 
   // Handle user disconnection
   socket.on("disconnect", () => {
-    console.log(`❌ User disconnected: ${socket.id}`);
+  console.log(`❌ User disconnected: ${socket.id}`);
 
-    for (const roomId in rooms) {
-      if (rooms[roomId]?.includes(socket.id)) {
-        rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
-        io.to(roomId).emit("player-left", { message: "A player left the game." });
-
-        if (rooms[roomId].length === 0) {
-          delete rooms[roomId]; // Cleanup empty rooms
-        }
+     for (const roomId in rooms) {
+      const room = rooms[roomId]; // Store the room object
+      if (room && room.players && room.players[socket.id]) {
+        removePlayerFromRoom(socket.id, roomId);
         break;
       }
     }
-  });
+});
+
 });
 
 // Server listening

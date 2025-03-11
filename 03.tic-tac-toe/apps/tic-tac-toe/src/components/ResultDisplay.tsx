@@ -1,11 +1,12 @@
 interface ResultProps {
   result: string | null;
-  isXNext: boolean;
+  players: Record<string, string>;
+  currentTurn: string
 }
 
-const ResultDisplay = ({ result, isXNext }: ResultProps) => (
+const ResultDisplay = ({ result, players, currentTurn }: ResultProps) => (
   <div className="text-center text-lg font-semibold">
-    {result ? (result === "Tie" ? "It's a Tie!" : `Winner: ${result}`) : `Next Player: ${isXNext ? "X" : "O"}`}
+    {result ? (result === "Tie" ? "It's a Tie!" : `Winner: ${result}`) : `Turn: ${players[currentTurn] || "Waiting for players..."}`}
   </div>
 );
 
