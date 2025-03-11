@@ -1,11 +1,6 @@
-import { FC } from "react";
+import { CellProps } from "../types";
 
-interface CellProps {
-  value: string;
-  onClick: () => void;
-}
-
-const Cell: FC<CellProps> = ({ value, onClick }) => {
+const Cell = ({ value, onClick }: CellProps) => {
   const getCellColor = (val: string) => {
     if (val === "X") return "text-blue-500"; // Blue for X
     if (val === "O") return "text-red-500"; // Red for O
@@ -15,7 +10,7 @@ const Cell: FC<CellProps> = ({ value, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`w-20 h-20 flex justify-center items-center border text-2xl font-bold ${getCellColor(value)}`}
+      className={`w-20 h-20 flex justify-center items-center border border-gray-600 text-2xl font-bold ${getCellColor(value)}`}
       disabled={!!value}
     >
       {value}

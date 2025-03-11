@@ -10,9 +10,6 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
   const playerName = searchParams.get("playerName") || "Anonymous"; // Get player name from URL
 
   return (
-    <>
-      <h2 className="text-xl font-semibold text-center mb-4">Room: {id}</h2>
-      <Board roomId={id} playerName={playerName} />
-    </>
+    <Board roomId={id} playerName={playerName} />
   );
 }
