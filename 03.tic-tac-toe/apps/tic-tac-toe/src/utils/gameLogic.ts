@@ -6,7 +6,7 @@ export const checkWinner = (board: string[]): string | null => {
   ];
   
   for (const [a, b, c] of winPatterns) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+    if (a !== undefined && b !== undefined && c !== undefined && board[a] && board[a] === board[b] && board[a] === board[c]) {
       return board[a]; // ✅ Return winner immediately
     }
   }
