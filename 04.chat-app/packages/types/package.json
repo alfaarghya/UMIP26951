@@ -8,7 +8,8 @@
     "./clientTypes": "./src/clientTypes.ts"
   },
   "dependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@chatApp/eslint-config": "*",
