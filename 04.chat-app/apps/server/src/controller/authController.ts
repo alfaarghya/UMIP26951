@@ -148,7 +148,7 @@ export const signin = async (req: Request, res: Response) => {
 
 // User Logout Controller
 export const logout = (req: Request, res: Response) => {
-  res.cookie("token", "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  res.clearCookie("token", { ...COOKIE_OPTIONS, maxAge: 0 });
 
   res.status(Status.Success).json({
     status: Status.Success,
