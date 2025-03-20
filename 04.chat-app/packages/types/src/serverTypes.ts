@@ -47,3 +47,10 @@ export const UpdateRoomSchema = z.object({
   newName: z.string().min(3, "Room name must be at least 3 characters long").optional(),
   removeUserId: z.string().uuid("Invalid user ID format").optional(),
 });
+
+//validate delete room
+export const DeleteRoomSchema = z.object({
+  roomId: z.string().uuid("Invalid room ID format"), // Room ID must be a valid UUID
+  userId: z.string().uuid("Invalid admin ID format"), // Admin ID must be a valid UUID
+});
+

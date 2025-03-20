@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authenticate from "../middleware/authenticate";
-import { createRoom, getMessages, getUserChats, joinRoom, updateRoom } from "../controller/chatController";
+import { createRoom, deleteRoom, getMessages, getUserChats, joinRoom, updateRoom } from "../controller/chatController";
 
 
 const router = Router();
@@ -19,5 +19,8 @@ router.put("/join-room", authenticate, joinRoom);
 
 //update room -> rename or kick user
 router.put("/:roomId", authenticate, updateRoom);
+
+//delete a room
+router.delete("/:roomId", authenticate, deleteRoom);
 
 export default router;
