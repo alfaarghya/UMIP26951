@@ -4,6 +4,8 @@ import { Server } from "socket.io";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import checkRoutes from "./middleware/checkRoutes";
+import auth from "./routes/auth.route";
+import chat from "./routes/chat.route";
 
 const app = express();
 const server = createServer(app); // Create HTTP server
@@ -19,6 +21,10 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser()); //parse the cookies
 app.use(checkRoutes); // check all routes 
+
+//api routes
+app.use("api/auth/", auth);
+app.use("api/chat/", chat);
 
 // Default Route
 app.get("/", (req, res) => {
