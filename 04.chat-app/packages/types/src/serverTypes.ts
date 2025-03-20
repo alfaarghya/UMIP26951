@@ -39,3 +39,11 @@ export const JoinRoomSchema = z.object({
   roomName: z.string().min(3, "Room name must be at least 3 characters long"),
   userId: z.string().uuid()
 });
+
+//validate update room
+export const UpdateRoomSchema = z.object({
+  roomId: z.string().uuid("Invalid room ID format"),
+  userId: z.string().uuid("Invalid user ID format"),
+  newName: z.string().min(3, "Room name must be at least 3 characters long").optional(),
+  removeUserId: z.string().uuid("Invalid user ID format").optional(),
+});

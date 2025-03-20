@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Status, StatusMessages } from "../statusCode/response";
 import prisma from "@chatApp/db/prisma";
 import { decryptMessage } from "../utils/encryption";
-import { CreateRoomSchema, GetMessagesSchema, GetUserChatsSchema, JoinRoomSchema } from "@chatApp/types/serverTypes";
+import { CreateRoomSchema, GetMessagesSchema, GetUserChatsSchema, JoinRoomSchema, UpdateRoomSchema } from "@chatApp/types/serverTypes";
 
 //get the list of rooms & inbox
 export const getUserChats = async (req: Request, res: Response) => {
@@ -256,6 +256,73 @@ export const joinRoom = async (req: Request, res: Response) => {
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
       message: "Error joining room",
+    });
+    return;
+  }
+};
+
+// Update room (rename or remove user)
+export const updateRoom = async (req: Request, res: Response) => {
+  const validation = UpdateRoomSchema.safeParse({ roomId: req.params, ...req.body });
+  if (!validation.success) {
+    res.status(Status.InvalidInput).json({
+      status: Status.InvalidInput,
+      statusMessage: StatusMessages[Status.InvalidInput],
+      message: validation.error.errors.map(err => err.message).join(", "),
+    });
+    return;
+  }
+
+  try {
+    const { roomId, userId, newName, removeUserId } = validation.data;
+
+    const room = await prisma.chatRoom.findUnique({
+      where: { id: roomId },
+    });
+
+    if (!room || room.roomAdminId !== userId) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Only the room admin can update this room",
+      });
+      return;
+    }
+
+    if (newName) {
+      const updateRoom = await prisma.chatRoom.update({
+        where: { id: roomId },
+        data: { name: newName },
+      });
+
+      res.status(Status.Success).json({
+        status: Status.Success,
+        statusMessage: StatusMessages[Status.Success],
+        message: "Room updated successfully",
+        room: updateRoom
+      });
+      return;
+    }
+
+    if (removeUserId) {
+      await prisma.userChatRoom.deleteMany({
+        where: { roomId, userId: removeUserId },
+      });
+
+      res.status(Status.Success).json({
+        status: Status.Success,
+        statusMessage: StatusMessages[Status.Success],
+        message: `${removeUserId} removed from room`,
+      });
+      return;
+    }
+
+  } catch (error) {
+    console.error("Error updating room:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Error updating room",
     });
     return;
   }
