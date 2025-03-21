@@ -54,3 +54,8 @@ export const DeleteRoomSchema = z.object({
   userId: z.string().uuid("Invalid admin ID format"), // Admin ID must be a valid UUID
 });
 
+//validate user search
+export const UserSearchSchema = z.object({
+  search: z.string()
+});
+
