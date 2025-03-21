@@ -1,6 +1,6 @@
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import WebSocket from "ws";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import checkRoutes from "./middleware/checkRoutes";
@@ -10,12 +10,7 @@ import search from "./routes/search.route";
 
 const app = express();
 const server = createServer(app); // Create HTTP server
-const io = new Server(server, {
-  cors: {
-    origin: "*", // Adjust based on frontend origin
-    methods: ["GET", "POST"],
-  },
-});
+const wss = new WebSocket.Server({ server }); // Create WebSocket Server
 
 // Middleware
 app.use(cors());
@@ -24,9 +19,9 @@ app.use(cookieParser()); //parse the cookies
 app.use(checkRoutes); // check all routes 
 
 //api routes
-app.use("api/auth/", auth);
-app.use("api/chat/", chat);
-app.use("/api/search", search);
+app.use("/api/auth", auth);
+app.use("/api/chat", chat);
+app.use("/api/search", search)
 
 // Default Route
 app.get("/", (req, res) => {
@@ -34,4 +29,4 @@ app.get("/", (req, res) => {
 });
 
 // Export both `app` and `server`
-export { app, server, io };
+export { app, server, wss };
