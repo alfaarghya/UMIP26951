@@ -15,13 +15,13 @@ export const searchUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const { search } = validation.data;
+    const { username } = validation.data;
 
     // Find users where username partially matches the search input
     const matchUsers = await prisma.user.findMany({
       where: {
         username: {
-          contains: search, // Case-insensitive search
+          contains: username, // Case-insensitive search
           mode: "insensitive",
         },
       },
