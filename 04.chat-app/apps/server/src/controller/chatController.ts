@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Status, StatusMessages } from "../statusCode/response";
 import prisma from "@chatApp/db/prisma";
-import { decryptMessage } from "@chatApp/utils";
+// import { decryptMessage } from "@chatApp/utils";
 import { CreateRoomSchema, DeleteRoomSchema, GetMessagesSchema, GetUserChatsSchema, JoinRoomSchema, UpdateRoomSchema } from "@chatApp/types/serverTypes";
 
 //get the list of rooms & inbox
@@ -69,7 +69,11 @@ export const getUserChats = async (req: Request, res: Response) => {
 
 // Get chat history
 export const getMessages = async (req: Request, res: Response) => {
-  const validation = GetMessagesSchema.safeParse({ userId: req.body, inboxId: req.params.roomOrInboxId, roomId: req.params.roomOrInboxId });
+  const validation = GetMessagesSchema.safeParse({
+    userId: req.body.userId,
+    inboxId: req.params.roomOrInboxId,
+    roomId: req.params.roomOrInboxId
+  });
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
       status: Status.InvalidInput,
@@ -116,7 +120,8 @@ export const getMessages = async (req: Request, res: Response) => {
       });
     }
 
-    content = content.map(msg => ({ ...msg, content: decryptMessage(msg.content) }));
+    content = content.map(msg => ({ ...msg }));
+    // content = content.map(msg => ({ ...msg, content: decryptMessage(msg.content) }));
 
     res.status(Status.Success).json({
       status: Status.Success,
@@ -263,7 +268,10 @@ export const joinRoom = async (req: Request, res: Response) => {
 
 // Update room (rename or remove user)
 export const updateRoom = async (req: Request, res: Response) => {
-  const validation = UpdateRoomSchema.safeParse({ roomId: req.params, ...req.body });
+  const validation = UpdateRoomSchema.safeParse({
+    roomId: req.params.roomId,
+    ...req.body
+  });
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
       status: Status.InvalidInput,
@@ -274,7 +282,7 @@ export const updateRoom = async (req: Request, res: Response) => {
   }
 
   try {
-    const { roomId, userId, newName, removeUserId } = validation.data;
+    const { roomId, userId, newRoomName, removeUserId } = validation.data;
 
     const room = await prisma.chatRoom.findUnique({
       where: { id: roomId },
@@ -289,10 +297,10 @@ export const updateRoom = async (req: Request, res: Response) => {
       return;
     }
 
-    if (newName) {
+    if (newRoomName) {
       const updateRoom = await prisma.chatRoom.update({
         where: { id: roomId },
-        data: { name: newName },
+        data: { name: newRoomName },
       });
 
       res.status(Status.Success).json({
@@ -305,6 +313,16 @@ export const updateRoom = async (req: Request, res: Response) => {
     }
 
     if (removeUserId) {
+      if (await prisma.userChatRoom.findFirst({
+        where: { userId: removeUserId }
+      })) {
+        res.status(Status.NotFound).json({
+          status: Status.NotFound,
+          statusMessage: StatusMessages[Status.NotFound],
+          message: `${removeUserId} is Not in this room`,
+        });
+        return;
+      }
       await prisma.userChatRoom.deleteMany({
         where: { roomId, userId: removeUserId },
       });
@@ -330,7 +348,10 @@ export const updateRoom = async (req: Request, res: Response) => {
 
 // Delete a chat room (only by admin)
 export const deleteRoom = async (req: Request, res: Response) => {
-  const validation = DeleteRoomSchema.safeParse({ userId: req.body, roomId: req.params });
+  const validation = DeleteRoomSchema.safeParse({
+    userId: req.body.userId,
+    roomId: req.params.roomId
+  });
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
       status: Status.InvalidInput,
