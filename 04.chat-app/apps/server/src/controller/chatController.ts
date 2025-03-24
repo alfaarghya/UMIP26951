@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Status, StatusMessages } from "../statusCode/response";
 import prisma from "@chatApp/db/prisma";
-import { decryptMessage } from "../utils/encryption";
+import { decryptMessage } from "@chatApp/utils";
 import { CreateRoomSchema, DeleteRoomSchema, GetMessagesSchema, GetUserChatsSchema, JoinRoomSchema, UpdateRoomSchema } from "@chatApp/types/serverTypes";
 
 //get the list of rooms & inbox

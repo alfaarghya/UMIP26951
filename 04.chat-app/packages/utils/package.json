@@ -1,0 +1,15 @@
+{
+  "name": "@chatApp/utils",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@chatApp/eslint-config": "*",
+    "@chatApp/typescript-config": "*",
+    "@types/react": "19.0.8",
+    "typescript": "5.7.3"
+  }
+}

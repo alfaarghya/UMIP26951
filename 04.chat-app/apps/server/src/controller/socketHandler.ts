@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { parse } from "cookie";
 import prisma from "@chatApp/db/prisma";
-import { encryptMessage } from "../utils/encryption";
+import { encryptMessage } from "@chatApp/utils";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
