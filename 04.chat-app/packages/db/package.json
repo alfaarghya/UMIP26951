@@ -9,6 +9,7 @@
   "dependencies": {
     "@prisma/client": "^6.3.1",
     "@types/bcrypt": "^5.0.2",
+    "@chatApp/utils": "*",
     "bcrypt": "^5.1.1",
     "prisma": "^6.3.1"
   },
