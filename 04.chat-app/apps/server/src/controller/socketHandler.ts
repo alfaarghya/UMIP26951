@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { parse } from "cookie";
 import prisma from "@chatApp/db/prisma";
-import { encryptMessage } from "@chatApp/utils";
+// import { encryptMessage } from "@chatApp/utils";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
@@ -59,13 +59,14 @@ const socketHandler = (wss: WebSocketServer) => {
               return;
             }
 
-            // Encrypt message before storing
-            const encryptedContent = encryptMessage(content);
+
+            // // Encrypt message before storing
+            // const encryptedContent = encryptMessage(content);
 
             // Store message in DB
             const message = await prisma.message.create({
               data: {
-                content: encryptedContent,
+                content: content,
                 senderId: userId!,
                 roomId,
               },
@@ -94,13 +95,13 @@ const socketHandler = (wss: WebSocketServer) => {
               return;
             }
 
-            // Encrypt message before storing
-            const encryptedContent = encryptMessage(content);
+            // // Encrypt message before storing
+            // const encryptedContent = encryptMessage(content);
 
             // Store message in DB
             const message = await prisma.message.create({
               data: {
-                content: encryptedContent,
+                content: content,
                 senderId: ws.userId!,
                 receiverId: recipientId,
               },
