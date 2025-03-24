@@ -9,7 +9,7 @@ import { UserSignInSchema, UserSignUpSchema } from "@chatApp/types/serverTypes";
 // User Signup Controller
 export const signup = async (req: Request, res: Response) => {
   const validation = UserSignUpSchema.safeParse(req.body);
-  
+
   // check: if the request body is valid
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
@@ -21,7 +21,7 @@ export const signup = async (req: Request, res: Response) => {
     return;
   }
 
-  const { username, email, password } = validation.data;
+  const { name, username, email, password } = validation.data;
 
   try {
     // Check if username or email already exists
@@ -43,7 +43,7 @@ export const signup = async (req: Request, res: Response) => {
 
     // Create user
     const newUser = await prisma.user.create({
-      data: { username, email, password: hashedPassword },
+      data: { name, username, email, password: hashedPassword },
     });
 
     // Generate JWT token
