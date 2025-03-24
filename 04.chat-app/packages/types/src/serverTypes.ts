@@ -44,7 +44,7 @@ export const JoinRoomSchema = z.object({
 export const UpdateRoomSchema = z.object({
   roomId: z.string().uuid("Invalid room ID format"),
   userId: z.string().uuid("Invalid user ID format"),
-  newName: z.string().min(3, "Room name must be at least 3 characters long").optional(),
+  newRoomName: z.string().min(3, "Room name must be at least 3 characters long").optional(),
   removeUserId: z.string().uuid("Invalid user ID format").optional(),
 });
 
@@ -56,6 +56,6 @@ export const DeleteRoomSchema = z.object({
 
 //validate user search
 export const UserSearchSchema = z.object({
-  search: z.string()
+  username: z.string()
 });
 
