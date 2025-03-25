@@ -60,3 +60,7 @@ export const UserSearchSchema = z.object({
   username: z.string()
 });
 
+//validate get Room details
+export const GetRoomDetailsSchema = z.object({
+  roomId: z.string().uuid("Invalid room ID format")
+})

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authenticate from "../middleware/authenticate";
-import { createRoom, deleteRoom, getMessages, getUserChats, joinRoom, updateRoom } from "../controller/chatController";
+import { createRoom, deleteRoom, getMessages, getRoomDetails, getUserChats, joinRoom, updateRoom } from "../controller/chatController";
 
 
 const router = Router();
@@ -13,6 +13,9 @@ router.get("/:roomOrInboxId", authenticate, getMessages);
 
 //create a room
 router.post("/room", authenticate, createRoom);
+
+//get the list of people in the room
+router.post("/:roomId", authenticate, getRoomDetails);
 
 //join a room
 router.put("/join-room", authenticate, joinRoom);
