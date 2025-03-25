@@ -1,141 +1,143 @@
 import { WebSocketServer, WebSocket } from "ws";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { parse } from "cookie";
 import prisma from "@chatApp/db/prisma";
-// import { encryptMessage } from "@chatApp/utils";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
 }
 
+const rooms = new Map<string, Set<ExtendedWebSocket>>(); // RoomID -> Set of WebSockets
+const userSockets = new Map<string, ExtendedWebSocket>(); // userId -> WebSocket
+
 const socketHandler = (wss: WebSocketServer) => {
-  wss.on("connection", async (ws: ExtendedWebSocket, req) => {
-    try {
-      //  Authenticate User via JWT from cookies
-      const cookies = parse(req.headers.cookie || "");
-      const token = cookies?.authToken;
-      if (!token) {
-        console.log("❌ No token found, closing connection.");
-        ws.close();
-        return;
-      }
+  wss.on("connection", async (ws: ExtendedWebSocket) => {
+    console.log("🔗 A user connected");
 
-      // eslint-disable-next-line turbo/no-undeclared-env-vars
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-      const userId = decoded?.userId;
-      if (!decoded || !userId) {
-        console.log("❌ Invalid token, closing connection.");
-        ws.close();
-        return;
-      }
+    ws.on("message", async (data) => {
+      try {
+        const { type, content, roomId, recipientId, senderId } = JSON.parse(data.toString());
 
-      ws.userId = decoded.userId; // Store userId in ws connection
-      console.log(`🔗 User ${ws.userId} connected`);
+        if (!content || !senderId) {
+          console.log("❌ Missing content or senderId.");
+          return;
+        }
 
-      // Handle incoming messages
-      ws.on("message", async (data) => {
-        try {
-          const { type, content, roomId, recipientId } = JSON.parse(data.toString());
+        ws.userId = senderId; // Store userId in the WebSocket connection
+        userSockets.set(senderId, ws); // Track active WebSockets by userId
 
-          if (!content) {
-            console.log("❌ No content found.");
+        // Handling Room Messages
+        if (type === "roomMessage") {
+          if (!roomId) {
+            console.log("❌ No roomId found.");
             return;
           }
 
-          // Handling Room Messages
-          if (type === "roomMessage") {
-            if (!roomId) {
-              console.log("❌ No roomId found.");
-              return;
-            }
+          // Check if user is in the room
+          const userInRoom = await prisma.userChatRoom.findUnique({
+            where: { userId_roomId: { userId: senderId, roomId } },
+          });
 
-            // Check if user is in the room
-            const userInRoom = await prisma.userChatRoom.findUnique({
-              where: { userId_roomId: { userId, roomId } },
-            });
-
-            if (!userInRoom) {
-              ws.send(JSON.stringify({ error: "You are not part of this room." }));
-              return;
-            }
-
-
-            // // Encrypt message before storing
-            // const encryptedContent = encryptMessage(content);
-
-            // Store message in DB
-            const message = await prisma.message.create({
-              data: {
-                content: content,
-                senderId: userId!,
-                roomId,
-              },
-            });
-
-            // Broadcast to all users in the room
-            wss.clients.forEach(client => {
-              if (client.readyState === WebSocket.OPEN && (client as ExtendedWebSocket).userId !== ws.userId) {
-                client.send(
-                  JSON.stringify({
-                    type: "roomMessage",
-                    roomId,
-                    senderId: ws.userId,
-                    content,
-                    createdAt: message.createdAt,
-                  })
-                );
-              }
-            });
+          if (!userInRoom) {
+            ws.send(JSON.stringify({ error: "You are not part of this room." }));
+            return;
           }
 
-          // Handling Direct Messages
-          else if (type === "directMessage") {
-            if (!recipientId) {
-              console.log("❌ No recipientId found.");
-              return;
-            }
-
-            // // Encrypt message before storing
-            // const encryptedContent = encryptMessage(content);
-
-            // Store message in DB
-            const message = await prisma.message.create({
-              data: {
-                content: content,
-                senderId: ws.userId!,
-                receiverId: recipientId,
-              },
-            });
-
-            // Send message to recipient if online
-            wss.clients.forEach(client => {
-              if ((client as ExtendedWebSocket).userId === recipientId && client.readyState === WebSocket.OPEN) {
-                client.send(
-                  JSON.stringify({
-                    type: "directMessage",
-                    senderId: ws.userId,
-                    recipientId,
-                    content,
-                    createdAt: message.createdAt,
-                  })
-                );
-              }
-            });
+          // Add user to the room's WebSocket set
+          if (!rooms.has(roomId)) {
+            rooms.set(roomId, new Set());
           }
-        } catch (err) {
-          console.error("Error handling message:", err);
+          rooms.get(roomId)?.add(ws);
+
+          // Store message in DB
+          const message = await prisma.message.create({
+            data: {
+              content: content,
+              senderId,
+              roomId,
+            },
+          });
+
+          // Send message only to users in the same room
+          rooms.get(roomId)?.forEach(client => {
+            if (client.readyState === WebSocket.OPEN && client.userId !== senderId) {
+              client.send(
+                JSON.stringify({
+                  type: "roomMessage",
+                  roomId,
+                  senderId,
+                  content,
+                  createdAt: message.createdAt,
+                })
+              );
+            }
+          });
+        }
+
+        // Handling Direct Messages
+        else if (type === "directMessage") {
+          if (!recipientId) {
+            console.log("❌ No recipientId found.");
+            return;
+          }
+
+          // Store message in DB
+          const message = await prisma.message.create({
+            data: {
+              content: content,
+              senderId,
+              receiverId: recipientId,
+            },
+          });
+
+          // Only send to the intended recipient
+          const recipientSocket = userSockets.get(recipientId);
+          if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+            recipientSocket.send(
+              JSON.stringify({
+                type: "directMessage",
+                senderId,
+                recipientId,
+                content,
+                createdAt: message.createdAt,
+              })
+            );
+          }
+
+          // Send a confirmation to the sender (optional)
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(
+              JSON.stringify({
+                type: "messageSentConfirmation",
+                recipientId,
+                content,
+                createdAt: message.createdAt,
+              })
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error handling message:", err);
+      }
+    });
+
+    // Handle disconnection
+    ws.on("close", () => {
+      console.log(`❌ User ${ws.userId} disconnected`);
+
+      // Remove user from rooms
+      rooms.forEach((clients, roomId) => {
+        if (clients.has(ws)) {
+          clients.delete(ws);
+          if (clients.size === 0) {
+            rooms.delete(roomId);
+          }
         }
       });
 
-      // Handle disconnection
-      ws.on("close", () => {
-        console.log(`❌ User ${ws.userId} disconnected`);
-      });
-
-    } catch (err) {
-      console.error("Error in WebSocket connection:", err);
-      ws.close();
-    }
+      // Remove user from active WebSocket connections
+      if (ws.userId) {
+        userSockets.delete(ws.userId);
+      }
+    });
   });
 };
 
