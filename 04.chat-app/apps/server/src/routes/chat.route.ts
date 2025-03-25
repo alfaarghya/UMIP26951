@@ -15,15 +15,15 @@ router.get("/:roomOrInboxId", authenticate, getMessages);
 router.post("/room", authenticate, createRoom);
 
 //get the list of people in the room
-router.post("/:roomId", authenticate, getRoomDetails);
+router.get("/room/:roomId", authenticate, getRoomDetails);
 
 //join a room
-router.put("/join-room", authenticate, joinRoom);
+router.put("/room/join-room", authenticate, joinRoom);
 
 //update room -> rename or kick user
-router.put("/:roomId", authenticate, updateRoom);
+router.put("/room/:roomId", authenticate, updateRoom);
 
 //delete a room
-router.delete("/:roomId", authenticate, deleteRoom);
+router.delete("/room/:roomId", authenticate, deleteRoom);
 
 export default router;

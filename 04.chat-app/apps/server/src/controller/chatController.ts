@@ -199,7 +199,7 @@ export const createRoom = async (req: Request, res: Response) => {
 // get the room details, roomName, created date, users{userIds, usernames}
 export const getRoomDetails = async (req: Request, res: Response) => {
   //validate the requested data
-  const validation = GetRoomDetailsSchema.safeParse(req.params.roomId);
+  const validation = GetRoomDetailsSchema.safeParse({ roomId: req.params.roomId });
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
       status: Status.InvalidInput,
