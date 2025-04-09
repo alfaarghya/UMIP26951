@@ -29,7 +29,7 @@ const SignUpPage = () => {
 
       if (res.status === 200) {
         toast.success("Signed up successfully!");
-        login(res.data.username);
+        login(res.data.username, res.data.userId);
         router.push('/chat');
       }
     } catch (error: any) {

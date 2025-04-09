@@ -8,8 +8,9 @@ export const useUsername = () => {
     if (stored) setUsername(stored);
   }, []);
 
-  const login = (name: string) => {
+  const login = (name: string, userId: string) => {
     localStorage.setItem("username", name);
+    localStorage.setItem("userId", userId);
     setUsername(name);
   };
 
