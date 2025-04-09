@@ -41,13 +41,21 @@ export const getUserChats = async (req: Request, res: Response) => {
         sender: { select: { id: true, username: true } },
         receiver: { select: { id: true, username: true } },
       },
-      distinct: ["senderId", "receiverId"],
     });
 
-    // Format inbox users to exclude the logged-in user
-    const inbox = inboxUsers
-      .flatMap(({ sender, receiver }) => [sender, receiver])
-      .filter(user => user && user.id !== userId);
+    // Deduplicate and exclude self
+    const userMap = new Map<string, { id: string; username: string }>();
+
+    inboxUsers.forEach(({ sender, receiver }) => {
+      if (sender && sender.id !== userId) {
+        userMap.set(sender.id, sender);
+      }
+      if (receiver && receiver.id !== userId) {
+        userMap.set(receiver.id, receiver);
+      }
+    });
+
+    const inbox = Array.from(userMap.values());
 
     res.status(Status.Success).json({
       status: Status.Success,
@@ -71,8 +79,8 @@ export const getUserChats = async (req: Request, res: Response) => {
 export const getMessages = async (req: Request, res: Response) => {
   const validation = GetMessagesSchema.safeParse({
     userId: req.body.userId,
-    inboxId: req.params.roomOrInboxId,
-    roomId: req.params.roomOrInboxId
+    chatId: req.params.chatId,
+    type: req.query.type
   });
   if (!validation.success) {
     res.status(Status.InvalidInput).json({
@@ -84,14 +92,14 @@ export const getMessages = async (req: Request, res: Response) => {
   }
 
   try {
-    const { userId, inboxId, roomId } = validation.data;
+    const { userId, chatId, type } = validation.data;
     let content;
 
-    if (roomId) {
+    if (type == "roomMessage") {
       // Ensure the user is part of the room
       const isUserInRoom = await prisma.userChatRoom.findUnique({
         where: {
-          userId_roomId: { userId, roomId },
+          userId_roomId: { userId, roomId: chatId },
         },
       });
 
@@ -106,20 +114,30 @@ export const getMessages = async (req: Request, res: Response) => {
 
       //Fetch messages from the room
       content = await prisma.message.findMany({
-        where: { roomId },
+        where: { roomId: chatId },
         orderBy: { createdAt: "asc" },
         include: { sender: { select: { username: true } } }
       });
 
-    } else {
+    } else if (type === "directMessage") {
       // Fetch direct messages only if the user is a sender or receiver
       content = await prisma.message.findMany({
         where: {
-          senderId: userId, receiverId: inboxId
+          OR: [
+            { senderId: userId, receiverId: chatId },
+            { senderId: chatId, receiverId: userId }
+          ]
         },
         orderBy: { createdAt: "asc" },
         include: { sender: { select: { username: true } } }
       });
+    } else {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        messages: "type is not provided",
+      });
+      return;
     }
 
     content = content.map(msg => ({
