@@ -25,7 +25,7 @@ const DirectMessagePage = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await api.get(`/chat/${userId}`);
+        const res = await api.get(`/chat/${userId}?type=directMessage`);
         setMessages(res.data.content || []);
       } catch (err) {
         console.error("Failed to load messages", err);

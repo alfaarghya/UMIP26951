@@ -25,7 +25,7 @@ const RoomPage = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await api.get(`/chat/${roomId}`);
+        const res = await api.get(`/chat/${roomId}?type=roomMessage`);
         setMessages(res.data.content || []);
       } catch (err) {
         console.error("Failed to load messages", err);
