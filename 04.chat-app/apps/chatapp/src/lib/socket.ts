@@ -1,4 +1,3 @@
-// /src/lib/socket.ts
 import { useEffect, useRef, useCallback } from "react";
 
 type MessageType = "room" | "direct";
@@ -7,36 +6,35 @@ interface WebSocketOptions {
   chatId: string;
   type: MessageType;
   userId?: string;
+  sender?: string,
   onMessage: (data: any) => void;
 }
 
-export const useWebSocket = ({ chatId, type, userId, onMessage }: WebSocketOptions) => {
+export const useWebSocket = ({ chatId, type, userId, sender, onMessage }: WebSocketOptions) => {
   const socketRef = useRef<WebSocket | null>(null);
+  const onMessageRef = useRef(onMessage);
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
 
   const connect = useCallback(() => {
+    if (socketRef.current) return;
+
     const SOCKET_URL = "ws://localhost:8080";
     const socket = new WebSocket(SOCKET_URL);
     socketRef.current = socket;
 
-    socket.onopen = () => {
-      console.log("✅ WebSocket Connected");
 
-      // Join logic (only for roomMessage type)
-      if (userId && type === "room") {
-        socket.send(
-          JSON.stringify({
-            type: "joinRoom",
-            roomId: chatId,
-            senderId: userId,
-          })
-        );
-      }
+    socket.onopen = () => {
+      // console.log(userId);
+      console.log("✅ WebSocket Connected");
     };
 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        onMessage(data);
+        onMessageRef.current(data);
       } catch (err) {
         console.error("❌ Invalid message format", err);
       }
@@ -44,27 +42,44 @@ export const useWebSocket = ({ chatId, type, userId, onMessage }: WebSocketOptio
 
     socket.onclose = () => {
       console.log("❌ WebSocket Disconnected");
+      socketRef.current = null;
     };
 
     socket.onerror = (err) => {
       console.error("⚠️ WebSocket Error:", err);
     };
-  }, [chatId, type, userId, onMessage]);
+  }, []);
 
-  const sendMessage = (data: object) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(data));
-    } else {
-      console.warn("🚫 WebSocket not open yet");
+  const sendMessage = (content: string) => {
+
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.log("🚫 WebSocket not open yet");
+      console.log(socketRef.current);
+      return;
     }
+
+    const payload =
+      type === "room"
+        ? {
+          type: "roomMessage",
+          roomId: chatId,
+          senderId: userId,
+          sender: sender,
+          content,
+        }
+        : {
+          type: "directMessage",
+          recipientId: chatId,
+          senderId: userId,
+          sender: sender,
+          content,
+        };
+
+    socketRef.current.send(JSON.stringify(payload));
   };
 
   useEffect(() => {
     connect();
-
-    return () => {
-      socketRef.current?.close();
-    };
   }, [connect]);
 
   return { sendMessage };
