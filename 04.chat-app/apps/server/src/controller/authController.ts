@@ -62,6 +62,7 @@ export const signup = async (req: Request, res: Response) => {
       statusMessage: StatusMessages[Status.Success],
       message: "Account created successfully",
       username: newUser.username,
+      userId: newUser.id
     });
     return;
   } catch (error) {
@@ -133,6 +134,7 @@ export const signin = async (req: Request, res: Response) => {
       statusMessage: StatusMessages[Status.Success],
       message: "Signed in successfully",
       username: user.username,
+      userId: user.id
     });
     return;
   } catch (error) {
