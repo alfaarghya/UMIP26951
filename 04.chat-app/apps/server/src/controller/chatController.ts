@@ -20,7 +20,7 @@ export const getUserChats = async (req: Request, res: Response) => {
   try {
     const { userId } = validation.data;
 
-    // 1️⃣ Get rooms the user is in
+    // Get rooms the user is in
     const userRooms = await prisma.userChatRoom.findMany({
       where: { userId },
       include: {
@@ -32,7 +32,7 @@ export const getUserChats = async (req: Request, res: Response) => {
 
     const chatRooms = userRooms.map(({ room }) => room);
 
-    // 2️⃣ Get users the user has exchanged direct messages with
+    // Get users the user has exchanged direct messages with
     const inboxUsers = await prisma.message.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
@@ -108,6 +108,7 @@ export const getMessages = async (req: Request, res: Response) => {
       content = await prisma.message.findMany({
         where: { roomId },
         orderBy: { createdAt: "asc" },
+        include: { sender: { select: { username: true } } }
       });
 
     } else {
@@ -117,10 +118,14 @@ export const getMessages = async (req: Request, res: Response) => {
           senderId: userId, receiverId: inboxId
         },
         orderBy: { createdAt: "asc" },
+        include: { sender: { select: { username: true } } }
       });
     }
 
-    content = content.map(msg => ({ ...msg }));
+    content = content.map(msg => ({
+      ...msg,
+      sender: msg.sender.username,
+    }));
     // content = content.map(msg => ({ ...msg, content: decryptMessage(msg.content) }));
 
     res.status(Status.Success).json({
