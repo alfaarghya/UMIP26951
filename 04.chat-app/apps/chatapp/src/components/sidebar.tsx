@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import 'remixicon/fonts/remixicon.css'
 import api from "../lib/axios";
+import { useRouter } from "next/navigation";
 
 interface ChatRoom {
   id: string;
@@ -21,6 +22,8 @@ const Sidebar = () => {
   const [inbox, setInbox] = useState<InboxUser[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   const fetchChats = async () => {
     try {
       setLoading(true);
@@ -37,21 +40,36 @@ const Sidebar = () => {
 
   useEffect(() => {
     fetchChats();
+
+    const handleRoomCreated = () => {
+      fetchChats();
+    };
+
+    window.addEventListener("room-created", handleRoomCreated);
+    return () => window.removeEventListener("room-created", handleRoomCreated);
+
   }, []);
 
   return (
     <aside className="w-64 bg-gray-900 text-white p-4 space-y-6 overflow-y-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Chats</h2>
-        <button
-          onClick={fetchChats}
-          className="p-1 rounded hover:bg-gray-700 transition"
-          title="Refresh chat list"
-        >
-          <i
-            className={`ri-restart-line text-lg ${loading ? "animate-spin" : ""}`}
-          />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push("/chat/room/create")}
+            className="p-1 rounded hover:bg-gray-700 transition"
+            title="Create new room"
+          >
+            <i className="ri-add-circle-line text-xl" />
+          </button>
+          <button
+            onClick={fetchChats}
+            className="p-1 rounded hover:bg-gray-700 transition"
+            title="Refresh chat list"
+          >
+            <i className={`ri-restart-line text-lg ${loading ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {chatRooms.length > 0 && (
