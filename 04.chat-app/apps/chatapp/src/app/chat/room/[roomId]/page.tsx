@@ -5,14 +5,8 @@ import { useParams } from "next/navigation";
 import api from "../../../../lib/axios";
 import { useWebSocket } from "../../../../lib/socket";
 import RenderMessage from "../../../../components/render-message";
-
-interface Message {
-  id?: string;
-  senderId: string;
-  content: string;
-  createdAt?: string;
-  sender: string;
-}
+import { Message } from "@chatApp/types/clientTypes";
+import 'remixicon/fonts/remixicon.css'
 
 const RoomPage = () => {
   const { roomId } = useParams();
@@ -83,7 +77,7 @@ const RoomPage = () => {
           onChange={(e) => setNewMessage(e.target.value)}
         />
         <button onClick={handleSend} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Send
+          <i className="ri-send-plane-2-fill"></i>
         </button>
       </div>
     </div>

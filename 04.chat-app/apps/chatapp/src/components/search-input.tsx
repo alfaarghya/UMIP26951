@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "../lib/axios";
-
-interface User {
-  id: string;
-  username: string;
-}
+import { User } from "@chatApp/types/clientTypes";
 
 const SearchInput = () => {
   const [query, setQuery] = useState("");

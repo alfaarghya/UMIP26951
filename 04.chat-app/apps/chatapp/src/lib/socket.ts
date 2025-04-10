@@ -1,14 +1,5 @@
+import { WebSocketOptions } from "@chatApp/types/clientTypes";
 import { useEffect, useRef, useCallback } from "react";
-
-type MessageType = "room" | "direct";
-
-interface WebSocketOptions {
-  chatId: string;
-  type: MessageType;
-  userId?: string;
-  sender?: string,
-  onMessage: (data: any) => void;
-}
 
 export const useWebSocket = ({ chatId, type, userId, sender, onMessage }: WebSocketOptions) => {
   const socketRef = useRef<WebSocket | null>(null);

@@ -1,12 +1,5 @@
+import { Message } from "@chatApp/types/clientTypes";
 import ReactMarkdown from "react-markdown";
-
-interface Message {
-  id?: string;
-  senderId: string;
-  content: string;
-  createdAt?: string;
-  sender: string;
-}
 
 const RenderMessage = ({
   msg,

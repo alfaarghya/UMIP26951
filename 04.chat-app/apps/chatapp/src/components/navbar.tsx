@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useUsername } from "../hooks/useUsername";
 import SearchInput from "./search-input";
+import 'remixicon/fonts/remixicon.css'
 
 const Navbar = () => {
   const { username, logout } = useUsername();
@@ -18,7 +19,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-800 text-white p-5 flex justify-between items-center shadow-lg fixed w-full top-0 z-50">
-      <Link href="/" className="text-2xl font-bold">ChatApp</Link>
+      <Link href="/" className="text-2xl font-bold"><i className="ri-chat-1-fill"></i> Chat App</Link>
 
       {username && (
         <div className="flex-1 mx-10">

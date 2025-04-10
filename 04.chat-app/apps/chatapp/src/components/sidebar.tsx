@@ -5,17 +5,7 @@ import { useEffect, useState } from "react";
 import 'remixicon/fonts/remixicon.css'
 import api from "../lib/axios";
 import { useRouter } from "next/navigation";
-
-interface ChatRoom {
-  id: string;
-  name: string;
-  createdAt: string;
-}
-
-interface InboxUser {
-  id: string;
-  username: string;
-}
+import { ChatRoom, InboxUser } from "@chatApp/types/clientTypes"
 
 const Sidebar = () => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -86,7 +76,7 @@ const Sidebar = () => {
 
       {chatRooms.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-2">Rooms</h3>
+          <h3 className="text-lg font-semibold mb-2">Rooms <i className="ri-team-fill"></i></h3>
           <ul className="space-y-2">
             {chatRooms.map((room) => (
               <li key={room.id}>
@@ -104,7 +94,7 @@ const Sidebar = () => {
 
       {inbox.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-2">Direct Messages</h3>
+          <h3 className="text-lg font-semibold mb-2">Inboxes <i className="ri-inbox-2-fill"></i></h3>
           <ul className="space-y-2">
             {inbox.map((dm) => (
               <li key={dm.id}>
