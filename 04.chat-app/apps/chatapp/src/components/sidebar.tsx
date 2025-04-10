@@ -41,12 +41,17 @@ const Sidebar = () => {
   useEffect(() => {
     fetchChats();
 
-    const handleRoomCreated = () => {
+    const handleRoomUpdate = () => {
       fetchChats();
     };
 
-    window.addEventListener("room-created", handleRoomCreated);
-    return () => window.removeEventListener("room-created", handleRoomCreated);
+    window.addEventListener("room-created", handleRoomUpdate);
+    window.addEventListener("room-joined", handleRoomUpdate);
+
+    return () => {
+      window.removeEventListener("room-created", handleRoomUpdate);
+      window.removeEventListener("room-joined", handleRoomUpdate);
+    };
 
   }, []);
 
@@ -61,6 +66,13 @@ const Sidebar = () => {
             title="Create new room"
           >
             <i className="ri-add-circle-line text-xl" />
+          </button>
+          <button
+            onClick={() => router.push("/chat/room/join")}
+            className="p-1 rounded hover:bg-gray-700 transition"
+            title="Join room"
+          >
+            <i className="ri-login-box-line text-xl" />
           </button>
           <button
             onClick={fetchChats}
