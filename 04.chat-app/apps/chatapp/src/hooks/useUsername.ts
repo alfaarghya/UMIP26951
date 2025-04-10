@@ -5,8 +5,15 @@ export const useUsername = () => {
 
   useEffect(() => {
     const stored = localStorage.getItem("username");
-    if (stored) setUsername(stored);
-  }, []);
+    setUsername(stored);
+
+    const interval = setInterval(() => {
+      const current = localStorage.getItem("username");
+      if (current !== username) setUsername(current);
+    }, 400); // small interval to check for changes in same tab
+
+    return () => clearInterval(interval);
+  }, [username]);
 
   const login = (name: string, userId: string) => {
     localStorage.setItem("username", name);
@@ -16,6 +23,7 @@ export const useUsername = () => {
 
   const logout = () => {
     localStorage.removeItem("username");
+    localStorage.removeItem("userId");
     setUsername(null);
     document.cookie = "token=; Max-Age=0; path=/";
   };
