@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CreateRoomSchema } from "@chatApp/types/serverTypes";
 import api from "../../../../lib/axios";
 
 const CreateRoomPage = () => {
@@ -12,19 +11,14 @@ const CreateRoomPage = () => {
   const router = useRouter();
 
   const handleCreateRoom = async () => {
-    const userId = localStorage.getItem("userId");
-
-    const parsed = CreateRoomSchema.safeParse({ roomName, userId });
-
-    if (!parsed.success) {
-      const issues = parsed.error.issues.map(i => i.message).join(", ");
-      toast.error(issues);
+    if (!roomName.trim()) {
+      toast.error("Please enter a room name");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await api.post("/chat/room", parsed.data);
+      const res = await api.post("/chat/room", { roomName });
 
       toast.success("Room created successfully");
       window.dispatchEvent(new Event("room-created"));
