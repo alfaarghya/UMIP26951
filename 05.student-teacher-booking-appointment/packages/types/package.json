@@ -1,0 +1,24 @@
+{
+  "name": "@stba/types",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "exports": {
+    "./serverTypes": "./src/server/index.ts",
+    "./clientTypes": "./src/client/index.ts"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@stba/eslint-config": "*",
+    "@stba/typescript-config": "*",
+    "@types/react": "19.0.8",
+    "typescript": "5.7.3"
+  }
+}
