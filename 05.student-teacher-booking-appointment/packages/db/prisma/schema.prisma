@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointmentsAsStudent Appointment[] @relation("StudentAppointments")
+  appointmentsAsTeacher Appointment[] @relation("TeacherAppointments")
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  studentId String
+  teacherId String
+  date      DateTime
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student User @relation("StudentAppointments", fields: [studentId], references: [id])
+  teacher User @relation("TeacherAppointments", fields: [teacherId], references: [id])
+}
+
+// ENUMS
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  DENIED
+}
