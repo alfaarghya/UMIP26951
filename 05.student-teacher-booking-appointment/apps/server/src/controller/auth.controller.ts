@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { Status, StatusMessages } from "../statusCode/response";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import prisma from "@stba/db/prisma";
-import { SetPasswordSchema, StudentRegisterSchema } from "@stba/types/serverTypes";
+import { COOKIE_OPTIONS } from "../utils/cookieOptions";
+import { SetPasswordSchema, StudentRegisterSchema, UserLoginSchema } from "@stba/types/serverTypes";
 
 //registration controller for students
 export const registerStudent = async (req: Request, res: Response) => {
@@ -125,6 +127,99 @@ export const setTeacherPassword = async (req: Request, res: Response) => {
     return;
   } catch (err) {
     console.error("Set password error:", err);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error please try again later",
+    });
+    return;
+  }
+};
+
+// Login Controller for all users(admin, teacher, students)
+export const login = async (req: Request, res: Response) => {
+  try {
+
+    //validate the request data
+    const validation = UserLoginSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get the data
+    const { email, password, role } = validation.data;
+
+    //check for user
+    if (role !== "ADMIN" && role !== "TEACHER" && role !== "STUDENT") {
+      res.status(Status.Unauthorized).json({
+        status: Status.Unauthorized,
+        statusMessage: StatusMessages[Status.Unauthorized],
+        message: "User role does not match",
+      });
+      return;
+    }
+
+    //check for user
+    const user = await prisma.user.findFirst({ where: { email, role } });
+    if (!user) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "User not found, please check credentials",
+      });
+      return;
+    }
+
+
+    if (!user.password) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Teacher need to set password first",
+      });
+      return;
+    }
+
+
+    //match password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Invalid password",
+      });
+      return;
+    }
+
+    // generate auth token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      // eslint-disable-next-line turbo/no-undeclared-env-vars
+      process.env.JWT_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    //set the cookies
+    res.cookie("token", token, COOKIE_OPTIONS);
+
+    //success response
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Login successful",
+      userId: user.id,
+      name: user.name,
+      role: user.role,
+    });
+    return;
+  } catch (err) {
+    console.error("Login error:", err);
     res.status(Status.InternalServerError).json({
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],

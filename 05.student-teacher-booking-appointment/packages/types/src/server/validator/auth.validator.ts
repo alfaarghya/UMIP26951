@@ -14,7 +14,6 @@ export const SetPasswordSchema = z.object({
   password: z.string().min(8, "Password need at least 8 char long").nonempty("Password is required"),
 });
 
-
 //login validator
 export const UserLoginSchema = z.object({
   email: z.string().email("Email is required").nonempty("can't leave email empty"),
