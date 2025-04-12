@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, registerStudent, setTeacherPassword } from "../controller/auth.controller";
+import { login, logout, registerStudent, setTeacherPassword } from "../controller/auth.controller";
 
 const router = Router();
 
@@ -11,5 +11,8 @@ router.post('/teacher/password', setTeacherPassword);
 
 //user login
 router.post("/login", login);
+
+//user log out
+router.post("/logout", logout);
 
 export default router;
