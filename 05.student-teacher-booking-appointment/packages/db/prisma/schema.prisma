@@ -9,27 +9,55 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STUDENT)
-  status    Status   @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String     @id @default(uuid())
+  name       String
+  email      String     @unique
+  password   String?
+  role       Role       @default(STUDENT)
+  status     UserStatus @default(PENDING)
+  department String? // Only for TEACHER
+  subject    String? // Only for TEACHER
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   appointmentsAsStudent Appointment[] @relation("StudentAppointments")
   appointmentsAsTeacher Appointment[] @relation("TeacherAppointments")
+
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
+  AuditLog         AuditLog[]
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  action    String
+  targetId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
 }
 
 model Appointment {
-  id        String   @id @default(uuid())
+  id        String            @id @default(uuid())
   studentId String
   teacherId String
   date      DateTime
-  status    Status   @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    AppointmentStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   student User @relation("StudentAppointments", fields: [studentId], references: [id])
   teacher User @relation("TeacherAppointments", fields: [teacherId], references: [id])
@@ -42,7 +70,13 @@ enum Role {
   ADMIN
 }
 
-enum Status {
+enum AppointmentStatus {
+  PENDING
+  APPROVED
+  CANCELLED
+}
+
+enum UserStatus {
   PENDING
   APPROVED
   DENIED
