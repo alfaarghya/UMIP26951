@@ -142,3 +142,44 @@ export const bookAppointment = async (req: Request, res: Response) => {
   }
 };
 
+export const getAppointments = async (req: Request, res: Response) => {
+  try {
+    // get student ID from token
+    const studentId = req.body.userId;
+
+    // fetch appointments
+    const appointments = await prisma.appointment.findMany({
+      where: { studentId },
+      orderBy: { date: "asc" },
+      include: {
+        teacher: {
+          select: { id: true, name: true, email: true, subject: true, department: true },
+        },
+      },
+    });
+
+    //map data properly
+    const response = appointments.map(val => ({
+      ...val,
+      teacher: val.teacher
+    }))
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "successfully retrieve appointments",
+      appointments: response,
+    });
+    return;
+
+  } catch (error) {
+    console.error("getting appointments error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
+
