@@ -2,7 +2,7 @@ import { Router } from "express";
 import authenticate from "../middleware/authenticate";
 import { authorizeStudent } from "../middleware/authorize";
 import { getTeachers } from "../controller/admin.controller";
-import { bookAppointment, cancelAppointment, getAppointments } from "../controller/student.controller";
+import { bookAppointment, cancelAppointment, getAppointments, getMessages } from "../controller/student.controller";
 
 const router = Router();
 
@@ -17,5 +17,8 @@ router.get("/appointment", [authenticate, authorizeStudent], getAppointments);
 
 //cancel an appointment
 router.delete("/appointment/:id", [authenticate, authorizeStudent], cancelAppointment);
+
+//get messages for an appointment
+router.get("/messages/:id", [authenticate, authorizeStudent], getMessages);
 
 export default router;

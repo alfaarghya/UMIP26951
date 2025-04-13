@@ -19,3 +19,9 @@ export const CancelAppointmentSchema = z.object({
   studentId: z.string().uuid("id need to a uuid").nonempty("studentId is required"),
   appointmentId: z.string().uuid("id need to a uuid").nonempty("appointmentId is required"),
 });
+
+//get message schema
+export const GetMessageSchema = z.object({
+  studentId: z.string().uuid("id need to a uuid").nonempty("studentId is required"),
+  appointmentId: z.string().uuid("id need to a uuid").nonempty("appointmentId is required")
+})

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { SearchTeacherSchema, BookAppointmentSchema, CancelAppointmentSchema } from "@stba/types/serverTypes";
+import { SearchTeacherSchema, BookAppointmentSchema, CancelAppointmentSchema, GetMessageSchema } from "@stba/types/serverTypes";
 
 export const searchTeachers = async (req: Request, res: Response) => {
   try {
@@ -236,3 +236,57 @@ export const cancelAppointment = async (req: Request, res: Response) => {
   }
 };
 
+//get message by teacher 
+export const getMessages = async (req: Request, res: Response) => {
+  try {
+    //validate request data
+    const validation = GetMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get valid data
+    const { studentId, appointmentId } = validation.data;
+
+    // search db for message for a appointment
+    const messages = await prisma.message.findMany({
+      where: {
+        receiverId: studentId,
+        appointmentId: appointmentId
+      },
+    });
+
+    //no message found
+    if (!messages) {
+      res.status(Status.NoContent).json({
+        status: Status.NoContent,
+        statusMessage: StatusMessages[Status.NoContent],
+        message: "No Message found",
+      });
+      return;
+    }
+
+    //send success response
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Message found",
+      content: messages
+    });
+    return;
+
+  } catch (error) {
+    console.error("getting message error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
