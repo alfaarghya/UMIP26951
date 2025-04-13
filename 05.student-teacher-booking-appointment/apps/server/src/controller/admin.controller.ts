@@ -246,3 +246,29 @@ export const updateStudentStatus = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// Get all students
+export const getStudents = async (_req: Request, res: Response) => {
+  try {
+    const students = await prisma.user.findMany({
+      where: { role: "STUDENT" },
+      select: { id: true, name: true, email: true, status: true },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "students successfully fetched",
+      students,
+    });
+    return;
+  } catch (error) {
+    console.error("Get students error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};
