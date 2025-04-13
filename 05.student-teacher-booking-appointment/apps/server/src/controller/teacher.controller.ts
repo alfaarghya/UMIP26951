@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { GetAppointmentSchema } from "@stba/types/serverTypes";
+import { AppointmentStatusSchema, GetAppointmentSchema } from "@stba/types/serverTypes";
 
 // Get appointments for a teacher based on status
 export const getAppointments = async (req: Request, res: Response) => {
@@ -69,3 +69,79 @@ export const getAppointments = async (req: Request, res: Response) => {
   }
 };
 
+//APPROVED/CANCELLED student appointment request
+export const updateAppointmentStatus = async (req: Request, res: Response) => {
+  try {
+    // validate request data
+    const validation = AppointmentStatusSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    // get valid data
+    const { appointmentId, action } = validation.data;
+
+    // find the appointment
+    const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId } });
+
+    // not found
+    if (!appointment) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Appointment not found",
+      });
+      return;
+    }
+
+    //appointment is already APPROVED
+    if (appointment.status === "APPROVED") {
+      res.status(Status.Conflict).json({
+        status: Status.Conflict,
+        statusMessage: StatusMessages[Status.Conflict],
+        message: `Appointment is already approved`,
+      })
+      return;
+    }
+
+    //appointment is already CANCELLED
+    if (appointment.status === "CANCELLED") {
+      res.status(Status.Conflict).json({
+        status: Status.Conflict,
+        statusMessage: StatusMessages[Status.Conflict],
+        message: `Appointment is already cancelled`,
+      })
+      return;
+    }
+
+
+    // update the appointment status
+    await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: action === "APPROVED" ? "APPROVED" : "CANCELLED",
+      },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: `Appointment ${action} successfully`,
+    });
+    return;
+
+  } catch (error) {
+    console.error("Appointment status update error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};
