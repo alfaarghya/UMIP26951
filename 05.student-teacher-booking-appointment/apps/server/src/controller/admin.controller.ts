@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AddTeacherSchema, UpdateTeacherSchema } from "@stba/types/serverTypes";
+import { AddTeacherSchema, RemoveTeacherSchema, UpdateTeacherSchema, } from "@stba/types/serverTypes";
 
 // Add teacher
 export const addTeacher = async (req: Request, res: Response) => {
@@ -134,6 +134,60 @@ export const updateTeacher = async (req: Request, res: Response) => {
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
       message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};
+
+// remove teacher
+export const removeTeacher = async (req: Request, res: Response) => {
+  try {
+    //validate request data
+    const validation = RemoveTeacherSchema.safeParse(req.params);
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get the valid data
+    const { teacherId } = validation.data;
+
+    //search the teacher in db
+    const teacher = await prisma.user.findFirst({
+      where: {
+        id: teacherId,
+        role: "TEACHER",
+      },
+    });
+
+    // no teacher found
+    if (!teacher) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Teacher not found",
+      });
+      return;
+    }
+
+    //remove the teacher
+    await prisma.user.delete({ where: { id: teacher.id } });
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Teacher removed successfully",
+    });
+    return;
+  } catch (error) {
+    console.error("Delete teacher error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
     });
     return;
   }

@@ -15,3 +15,8 @@ export const UpdateTeacherSchema = z.object({
   subject: z.string().optional(),
   department: z.string().optional(),
 });
+
+//delete teacher validator
+export const RemoveTeacherSchema = z.object({
+  teacherId: z.string().uuid().nonempty("require teacher's ID to remove"),
+});
