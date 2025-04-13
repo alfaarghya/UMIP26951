@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authenticate from "../middleware/authenticate";
 import { authorizeAdmin } from "../middleware/authorize";
-import { addTeacher, removeTeacher, getTeachers, updateTeacher } from "../controller/admin.controller";
+import { addTeacher, removeTeacher, getTeachers, updateStudentStatus, updateTeacher } from "../controller/admin.controller";
 
 const router = Router();
 
@@ -16,5 +16,9 @@ router.put("/teacher/:teacherId", [authenticate, authorizeAdmin], updateTeacher)
 
 //remove teacher
 router.delete("/teacher/:teacherId", [authenticate, authorizeAdmin], removeTeacher);
+
+
+// Approve / Cancel student
+router.put("/student/register/:studentId", [authenticate, authorizeAdmin], updateStudentStatus)
 
 export default router;

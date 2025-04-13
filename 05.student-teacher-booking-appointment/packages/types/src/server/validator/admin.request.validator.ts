@@ -20,3 +20,9 @@ export const UpdateTeacherSchema = z.object({
 export const RemoveTeacherSchema = z.object({
   teacherId: z.string().uuid().nonempty("require teacher's ID to remove"),
 });
+
+//student approval schema
+export const StudentApprovalSchema = z.object({
+  studentId: z.string().uuid().nonempty("required student Id to approve"),
+  action: z.enum(["PENDING", "APPROVED", "DENIED"]),
+});

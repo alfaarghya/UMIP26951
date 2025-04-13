@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AddTeacherSchema, RemoveTeacherSchema, UpdateTeacherSchema, } from "@stba/types/serverTypes";
+import { AddTeacherSchema, RemoveTeacherSchema, UpdateTeacherSchema, StudentApprovalSchema, } from "@stba/types/serverTypes";
 
 // Add teacher
 export const addTeacher = async (req: Request, res: Response) => {
@@ -188,6 +188,60 @@ export const removeTeacher = async (req: Request, res: Response) => {
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
       message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
+
+// Approve / Cancel student
+export const updateStudentStatus = async (req: Request, res: Response) => {
+  try {
+    //validated request data
+    const validation = StudentApprovalSchema.safeParse({ studentID: req.params, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get valid data
+    const { studentId, action } = validation.data;
+
+    //find the student in db
+    const student = await prisma.user.findUnique({ where: { id: studentId } });
+
+    //student not found
+    if (!student || student.role !== "STUDENT") {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Student not found",
+      });
+      return;
+    }
+
+    //update student status
+    await prisma.user.update({
+      where: { id: studentId },
+      data: {
+        status: action === "APPROVED" ? "APPROVED" : "DENIED",
+      },
+    });
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: `Student registration ${action} successfully`,
+    });
+    return;
+  } catch (error) {
+    console.error("Student approval error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later",
     });
     return;
   }
