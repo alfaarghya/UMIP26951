@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authenticate from "../middleware/authenticate";
 import { authorizeTeacher } from "../middleware/authorize";
-import { getAppointments, sendMessage, updateAppointmentStatus } from "../controller/teacher.controller";
+import { getAppointments, getMessages, sendMessage, updateAppointmentStatus } from "../controller/teacher.controller";
 
 const router = Router();
 
@@ -13,5 +13,8 @@ router.put("/appointment/:id", [authenticate, authorizeTeacher], updateAppointme
 
 //Send message by teacher
 router.post("/messages/:id", [authenticate, authorizeTeacher], sendMessage);
+
+//Send message by teacher
+router.get("/messages/:id", [authenticate, authorizeTeacher], getMessages);
 
 export default router;

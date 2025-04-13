@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AppointmentStatusSchema, GetAppointmentSchema, SendMessageSchema } from "@stba/types/serverTypes";
+import { AppointmentStatusSchema, GetAppointmentSchema, RetrieveMessageSchema, SendMessageSchema } from "@stba/types/serverTypes";
 
 // Get appointments for a teacher based on status
 export const getAppointments = async (req: Request, res: Response) => {
@@ -207,6 +207,89 @@ export const sendMessage = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error("sending message error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
+
+//retrieve message by teacher
+export const getMessages = async (req: Request, res: Response) => {
+  try {
+    // validate request data
+    const validation = RetrieveMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    // get valid data
+    const { teacherId, appointmentId } = validation.data;
+
+    // find the appointment
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    // if appointment doesn't exist
+    if (!appointment) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Appointment not found",
+      });
+      return;
+    }
+
+    // only the assigned teacher can access the messages
+    if (appointment.teacherId !== teacherId) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Unauthorized access to this appointment",
+      });
+      return;
+    }
+
+    // fetch messages where sender is the teacher for this appointment
+    const messages = await prisma.message.findMany({
+      where: {
+        senderId: teacherId,
+        appointmentId: appointmentId,
+      },
+      orderBy: {
+        createdAt: "asc"
+      }
+    });
+
+    // no messages
+    if (!messages.length) {
+      res.status(Status.NoContent).json({
+        status: Status.NoContent,
+        statusMessage: StatusMessages[Status.NoContent],
+        message: "No messages found",
+      });
+      return;
+    }
+
+    // success
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Messages retrieved successfully",
+      content: messages,
+    });
+    return;
+
+  } catch (error) {
+    console.error("get teacher messages error:", error);
     res.status(Status.InternalServerError).json({
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],

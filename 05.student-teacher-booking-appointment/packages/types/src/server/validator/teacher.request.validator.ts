@@ -19,3 +19,9 @@ export const SendMessageSchema = z.object({
   studentId: z.string().uuid("studentId must be a valid UUID").nonempty("studentId is required"),
   content: z.string().nonempty("message content is required"),
 });
+
+//retrieve message validator
+export const RetrieveMessageSchema = z.object({
+  teacherId: z.string().uuid("teacherId must be a valid UUID").nonempty("teacherId is required"),
+  appointmentId: z.string().uuid("appointmentId must be a valid UUID").nonempty("appointmentId is required"),
+});
