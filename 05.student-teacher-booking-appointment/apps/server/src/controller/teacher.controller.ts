@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AppointmentStatusSchema, GetAppointmentSchema } from "@stba/types/serverTypes";
+import { AppointmentStatusSchema, GetAppointmentSchema, SendMessageSchema } from "@stba/types/serverTypes";
 
 // Get appointments for a teacher based on status
 export const getAppointments = async (req: Request, res: Response) => {
@@ -141,6 +141,76 @@ export const updateAppointmentStatus = async (req: Request, res: Response) => {
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
       message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};
+
+//Send message by teacher
+export const sendMessage = async (req: Request, res: Response) => {
+  try {
+    // validate request data
+    const validation = SendMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    // get valid data
+    const { appointmentId, teacherId, studentId, content } = validation.data;
+
+    // check if appointment exists
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Appointment not found",
+      });
+      return;
+    }
+
+    // only teacher assigned to the appointment can message
+    if (appointment.teacherId !== teacherId) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Unauthorized access to send message for this appointment",
+      });
+      return;
+    }
+
+    // store message in db
+    await prisma.message.create({
+      data: {
+        content,
+        appointmentId,
+        senderId: teacherId,
+        receiverId: studentId,
+      },
+    });
+
+    // send success response
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Message sent successfully",
+    });
+    return;
+
+  } catch (error) {
+    console.error("sending message error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
     });
     return;
   }
