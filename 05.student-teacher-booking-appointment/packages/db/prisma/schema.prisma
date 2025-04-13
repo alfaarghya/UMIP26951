@@ -29,14 +29,16 @@ model User {
 }
 
 model Message {
-  id         String   @id @default(uuid())
-  senderId   String
-  receiverId String
-  content    String
-  createdAt  DateTime @default(now())
+  id            String   @id @default(uuid())
+  senderId      String
+  receiverId    String
+  appointmentId String
+  content       String
+  createdAt     DateTime @default(now())
 
-  sender   User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender      User        @relation("SentMessages", fields: [senderId], references: [id])
+  receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  appointment Appointment @relation("AppointmentMessages", fields: [appointmentId], references: [id])
 }
 
 model AuditLog {
@@ -59,8 +61,9 @@ model Appointment {
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
-  student User @relation("StudentAppointments", fields: [studentId], references: [id])
-  teacher User @relation("TeacherAppointments", fields: [teacherId], references: [id])
+  student             User      @relation("StudentAppointments", fields: [studentId], references: [id])
+  teacher             User      @relation("TeacherAppointments", fields: [teacherId], references: [id])
+  appointmentMessages Message[] @relation("AppointmentMessages")
 }
 
 // ENUMS
