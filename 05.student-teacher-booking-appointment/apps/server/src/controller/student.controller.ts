@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { SearchTeacherSchema } from "@stba/types/serverTypes";
+import { SearchTeacherSchema, BookAppointmentSchema } from "@stba/types/serverTypes";
 
 export const searchTeachers = async (req: Request, res: Response) => {
   try {
@@ -73,6 +73,66 @@ export const searchTeachers = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error("getting teacher error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
+
+export const bookAppointment = async (req: Request, res: Response) => {
+  try {
+    //validate request data
+    const validation = BookAppointmentSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get the data
+    const { studentId, teacherId, date } = validation.data;
+
+    // search teacher in db
+    const teacher = await prisma.user.findUnique({
+      where: { id: teacherId, role: "TEACHER", status: "APPROVED" },
+    });
+
+    //teacher not found
+    if (!teacher) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Teacher not found",
+      });
+      return;
+    }
+
+    // create appointment
+    const appointment = await prisma.appointment.create({
+      data: {
+        studentId,
+        teacherId,
+        date,
+        status: "PENDING"
+      },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Appointment booked successfully",
+      appointment,
+    });
+    return;
+
+  } catch (error) {
+    console.error("appointment booking error:", error);
     res.status(Status.InternalServerError).json({
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
