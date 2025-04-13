@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AddTeacherSchema } from "@stba/types/serverTypes";
+import { AddTeacherSchema, UpdateTeacherSchema } from "@stba/types/serverTypes";
 
 // Add teacher
 export const addTeacher = async (req: Request, res: Response) => {
@@ -86,3 +86,55 @@ export const getTeachers = async (_req: Request, res: Response) => {
   }
 };
 
+// Update teacher
+export const updateTeacher = async (req: Request, res: Response) => {
+  try {
+    //validate request data
+    const validation = UpdateTeacherSchema.safeParse({ teacherId: req.params, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get valid data
+    const { teacherId, name, subject, department } = validation.data;
+
+    //find the teacher
+    const teacher = await prisma.user.findUnique({ where: { id: teacherId } });
+
+    //teacher not found
+    if (!teacher || teacher.role !== "TEACHER") {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Teacher not found",
+      });
+      return;
+    }
+
+    //update teacher data
+    await prisma.user.update({
+      where: { id: teacherId },
+      data: { name, subject, department },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "successfully update teacher",
+    });
+    return;
+  } catch (error) {
+    console.error("Update teacher error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};

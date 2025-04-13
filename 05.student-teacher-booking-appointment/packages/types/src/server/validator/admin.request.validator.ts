@@ -7,3 +7,11 @@ export const AddTeacherSchema = z.object({
   subject: z.string().nonempty("add teacher's subject"),
   department: z.string().nonempty("add teacher's department"),
 });
+
+//update teacher validator
+export const UpdateTeacherSchema = z.object({
+  teacherId: z.string().uuid().nonempty("require teacher's ID to update"),
+  name: z.string().optional(),
+  subject: z.string().optional(),
+  department: z.string().optional(),
+});
