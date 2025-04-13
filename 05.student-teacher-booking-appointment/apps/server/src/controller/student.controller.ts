@@ -253,6 +253,30 @@ export const getMessages = async (req: Request, res: Response) => {
     //get valid data
     const { studentId, appointmentId } = validation.data;
 
+    // check if appointment exists
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "Appointment not found",
+      });
+      return;
+    }
+
+    // only the assigned student can access the messages
+    if (appointment.studentId !== studentId) {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Unauthorized access to messages for this appointment",
+      });
+      return;
+    }
+
     // search db for message for a appointment
     const messages = await prisma.message.findMany({
       where: {
@@ -275,7 +299,7 @@ export const getMessages = async (req: Request, res: Response) => {
     res.status(Status.Success).json({
       status: Status.Success,
       statusMessage: StatusMessages[Status.Success],
-      message: "Message found",
+      message: "Messages retrieved successfully",
       content: messages
     });
     return;
