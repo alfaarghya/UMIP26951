@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { SearchTeacherSchema, BookAppointmentSchema } from "@stba/types/serverTypes";
+import { SearchTeacherSchema, BookAppointmentSchema, CancelAppointmentSchema } from "@stba/types/serverTypes";
 
 export const searchTeachers = async (req: Request, res: Response) => {
   try {
@@ -174,6 +174,59 @@ export const getAppointments = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error("getting appointments error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later"
+    });
+    return;
+  }
+};
+
+export const cancelAppointment = async (req: Request, res: Response) => {
+  try {
+    //validate request data
+    const validation = CancelAppointmentSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get valid data
+    const { appointmentId, studentId } = validation.data;
+
+    // check if appointment exists
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId, studentId },
+    });
+
+    if (!appointment) {
+      res.status(Status.NotFound).json({
+        status: Status.NotFound,
+        statusMessage: StatusMessages[Status.NotFound],
+        message: "No Appointment found to cancel",
+      });
+      return;
+    }
+
+    // delete appointment
+    await prisma.appointment.delete({
+      where: { id: appointmentId },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "Appointment cancelled successfully",
+    });
+    return;
+
+  } catch (error) {
+    console.error("cancel appointments error:", error);
     res.status(Status.InternalServerError).json({
       status: Status.InternalServerError,
       statusMessage: StatusMessages[Status.InternalServerError],
