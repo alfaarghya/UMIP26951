@@ -59,3 +59,30 @@ export const addTeacher = async (req: Request, res: Response) => {
   }
 };
 
+// Get all teachers
+export const getTeachers = async (_req: Request, res: Response) => {
+  try {
+    //fetch teachers from db
+    const teachers = await prisma.user.findMany({
+      where: { role: "TEACHER" },
+      select: { id: true, name: true, email: true, subject: true, department: true },
+    });
+
+    res.status(Status.Success).json({
+      status: Status.Success,
+      statusMessage: StatusMessages[Status.Success],
+      message: "teachers successfully fetched",
+      teachers,
+    });
+    return;
+  } catch (error) {
+    console.error("Get teachers error:", error);
+    res.status(Status.InternalServerError).json({
+      status: Status.InternalServerError,
+      statusMessage: StatusMessages[Status.InternalServerError],
+      message: "Internal server error, please try again later",
+    });
+    return;
+  }
+};
+
