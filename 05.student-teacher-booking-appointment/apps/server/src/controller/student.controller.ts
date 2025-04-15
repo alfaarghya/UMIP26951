@@ -85,7 +85,7 @@ export const searchTeachers = async (req: Request, res: Response) => {
 export const bookAppointment = async (req: Request, res: Response) => {
   try {
     //validate request data
-    const validation = BookAppointmentSchema.safeParse(req.body);
+    const validation = BookAppointmentSchema.safeParse({ studentId: req.body.userId, ...req.body });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -186,7 +186,7 @@ export const getAppointments = async (req: Request, res: Response) => {
 export const cancelAppointment = async (req: Request, res: Response) => {
   try {
     //validate request data
-    const validation = CancelAppointmentSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    const validation = CancelAppointmentSchema.safeParse({ appointmentId: req.params.id, studentId: req.body.userId });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -213,6 +213,8 @@ export const cancelAppointment = async (req: Request, res: Response) => {
       return;
     }
 
+    //delete all messages
+    await prisma.message.deleteMany({ where: { appointmentId: appointmentId } })
     // delete appointment
     await prisma.appointment.delete({
       where: { id: appointmentId },
@@ -240,7 +242,7 @@ export const cancelAppointment = async (req: Request, res: Response) => {
 export const getMessages = async (req: Request, res: Response) => {
   try {
     //validate request data
-    const validation = GetMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    const validation = GetMessageSchema.safeParse({ appointmentId: req.params.appointmentId, studentId: req.body.userId });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,

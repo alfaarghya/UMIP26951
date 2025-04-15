@@ -7,7 +7,7 @@ import { AppointmentStatusSchema, GetAppointmentSchema, RetrieveMessageSchema, S
 export const getAppointments = async (req: Request, res: Response) => {
   try {
     //validate request data
-    const validation = GetAppointmentSchema.safeParse({ status: req.params.status, ...req.body });
+    const validation = GetAppointmentSchema.safeParse({ status: req.params.status, teacherId: req.body.userId });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -73,7 +73,7 @@ export const getAppointments = async (req: Request, res: Response) => {
 export const updateAppointmentStatus = async (req: Request, res: Response) => {
   try {
     // validate request data
-    const validation = AppointmentStatusSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    const validation = AppointmentStatusSchema.safeParse({ appointmentId: req.params.id, teacherId: req.body.userId, ...req.body });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -84,10 +84,10 @@ export const updateAppointmentStatus = async (req: Request, res: Response) => {
     }
 
     // get valid data
-    const { appointmentId, action } = validation.data;
+    const { appointmentId, action, teacherId } = validation.data;
 
     // find the appointment
-    const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId } });
+    const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId, teacherId } });
 
     // not found
     if (!appointment) {
@@ -122,7 +122,7 @@ export const updateAppointmentStatus = async (req: Request, res: Response) => {
 
     // update the appointment status
     await prisma.appointment.update({
-      where: { id: appointmentId },
+      where: { id: appointmentId, teacherId },
       data: {
         status: action === "APPROVED" ? "APPROVED" : "CANCELLED",
       },
@@ -150,7 +150,7 @@ export const updateAppointmentStatus = async (req: Request, res: Response) => {
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     // validate request data
-    const validation = SendMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    const validation = SendMessageSchema.safeParse({ appointmentId: req.params.id, teacherId: req.body.userId, ...req.body });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -220,7 +220,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 export const getMessages = async (req: Request, res: Response) => {
   try {
     // validate request data
-    const validation = RetrieveMessageSchema.safeParse({ appointmentId: req.params.id, ...req.body });
+    const validation = RetrieveMessageSchema.safeParse({ appointmentId: req.params.id, teacherId: req.body.userId });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -270,7 +270,7 @@ export const getMessages = async (req: Request, res: Response) => {
     });
 
     // no messages
-    if (!messages.length) {
+    if (!messages) {
       res.status(Status.NoContent).json({
         status: Status.NoContent,
         statusMessage: StatusMessages[Status.NoContent],

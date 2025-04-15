@@ -11,7 +11,7 @@ export const SearchTeacherSchema = z.object({
 export const BookAppointmentSchema = z.object({
   studentId: z.string().uuid("id need to a uuid").nonempty("studentId is required"),
   teacherId: z.string().uuid("id need to a uuid").nonempty("teacherId is required"),
-  date: z.string().date("Format: YYYY-MM-DD").nonempty("date is required"),
+  date: z.string().datetime("Format: YYYY-MM-DDTHH:MM:SSZ").nonempty("date is required"),
 })
 
 //student appointment cancel validator

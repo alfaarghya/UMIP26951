@@ -9,6 +9,7 @@ export const GetAppointmentSchema = z.object({
 //update appointment status validator
 export const AppointmentStatusSchema = z.object({
   appointmentId: z.string().uuid("invalid appointment ID").nonempty("appointment ID is required"),
+  teacherId: z.string().uuid("invalid Teacher ID").nonempty("teacher ID is required"),
   action: z.enum(["APPROVED", "CANCELLED"]),
 });
 

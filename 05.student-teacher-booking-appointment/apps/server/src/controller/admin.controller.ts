@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "@stba/db/prisma";
 import { Status, StatusMessages } from "../statusCode/response";
-import { AddTeacherSchema, RemoveTeacherSchema, UpdateTeacherSchema, StudentApprovalSchema, } from "@stba/types/serverTypes";
+import { AddTeacherSchema, RemoveTeacherSchema, UpdateTeacherSchema, StudentApprovalSchema, StudentStatusCheck, } from "@stba/types/serverTypes";
 
 // Add teacher
 export const addTeacher = async (req: Request, res: Response) => {
@@ -18,10 +18,10 @@ export const addTeacher = async (req: Request, res: Response) => {
     }
 
     //get the data
-    const { name, email, subject, department } = validation.data;
+    const { teacherName, teacherEmail, subject, department } = validation.data;
 
     //check for existing teacher
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: teacherEmail } });
     if (existing) {
       res.status(Status.Conflict).json({
         status: Status.Conflict,
@@ -34,8 +34,8 @@ export const addTeacher = async (req: Request, res: Response) => {
     //add new teacher
     await prisma.user.create({
       data: {
-        name,
-        email,
+        name: teacherName,
+        email: teacherEmail,
         subject,
         department,
         role: "TEACHER",
@@ -90,7 +90,7 @@ export const getTeachers = async (_req: Request, res: Response) => {
 export const updateTeacher = async (req: Request, res: Response) => {
   try {
     //validate request data
-    const validation = UpdateTeacherSchema.safeParse({ teacherId: req.params, ...req.body });
+    const validation = UpdateTeacherSchema.safeParse({ teacherId: req.params.teacherId, ...req.body });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -101,7 +101,7 @@ export const updateTeacher = async (req: Request, res: Response) => {
     }
 
     //get valid data
-    const { teacherId, name, subject, department } = validation.data;
+    const { teacherId, teacherName, subject, department } = validation.data;
 
     //find the teacher
     const teacher = await prisma.user.findUnique({ where: { id: teacherId } });
@@ -119,7 +119,7 @@ export const updateTeacher = async (req: Request, res: Response) => {
     //update teacher data
     await prisma.user.update({
       where: { id: teacherId },
-      data: { name, subject, department },
+      data: { name: teacherName, subject, department },
     });
 
     res.status(Status.Success).json({
@@ -197,7 +197,7 @@ export const removeTeacher = async (req: Request, res: Response) => {
 export const updateStudentStatus = async (req: Request, res: Response) => {
   try {
     //validated request data
-    const validation = StudentApprovalSchema.safeParse({ studentID: req.params, ...req.body });
+    const validation = StudentApprovalSchema.safeParse({ studentId: req.params.studentId, ...req.body });
     if (!validation.success) {
       res.status(Status.InvalidInput).json({
         status: Status.InvalidInput,
@@ -248,10 +248,24 @@ export const updateStudentStatus = async (req: Request, res: Response) => {
 };
 
 // Get all students
-export const getStudents = async (_req: Request, res: Response) => {
+export const getStudents = async (req: Request, res: Response) => {
   try {
+    //validated request data
+    const validation = StudentStatusCheck.safeParse(req.params);
+    if (!validation.success) {
+      res.status(Status.InvalidInput).json({
+        status: Status.InvalidInput,
+        statusMessage: StatusMessages[Status.InvalidInput],
+        message: validation.error.errors.map((err) => err.path + " " + err.message).join(", "),
+      });
+      return;
+    }
+
+    //get valid data
+    const { status } = validation.data;
+
     const students = await prisma.user.findMany({
-      where: { role: "STUDENT" },
+      where: { role: "STUDENT", status },
       select: { id: true, name: true, email: true, status: true },
     });
 

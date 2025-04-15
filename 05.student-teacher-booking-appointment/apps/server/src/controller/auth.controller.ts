@@ -185,6 +185,23 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
+    if (role === "STUDENT" && user.status === "DENIED") {
+      res.status(Status.Unauthorized).json({
+        status: Status.Unauthorized,
+        statusMessage: StatusMessages[Status.Unauthorized],
+        message: "Student's Registration is denied by admin",
+      });
+      return;
+    }
+
+    if (role === "STUDENT" && user.status === "PENDING") {
+      res.status(Status.Forbidden).json({
+        status: Status.Forbidden,
+        statusMessage: StatusMessages[Status.Forbidden],
+        message: "Student Please wait 12-24 hours for admin approval.",
+      });
+      return;
+    }
 
     //match password
     const isMatch = await bcrypt.compare(password, user.password);

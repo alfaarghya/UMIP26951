@@ -23,7 +23,7 @@ router.delete("/teacher/:teacherId", [authenticate, authorizeAdmin], removeTeach
 router.put("/student/register/:studentId", [authenticate, authorizeAdmin], updateStudentStatus)
 
 // get all students
-router.get("/student", [authenticate, authorizeAdmin], getStudents);
+router.get("/student/:status", [authenticate, authorizeAdmin], getStudents);
 
 
 export default router;
