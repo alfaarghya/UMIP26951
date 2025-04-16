@@ -9,7 +9,7 @@
   },
   "exports": {
     "./serverTypes": "./src/server/index.ts",
-    "./clientTypes": "./src/client/index.ts"
+    "./client": "./src/client/index.ts"
   },
   "dependencies": {
     "react": "^19.0.0",

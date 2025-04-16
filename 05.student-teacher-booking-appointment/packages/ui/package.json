@@ -8,13 +8,14 @@
     "./*": "./src/*.tsx"
   },
   "scripts": {
-    "dev": "tailwindcss -i ./src/global.css -o ./dist/index.css --watch",
-    "build": "tailwindcss -i ./src/global.css -o ./dist/index.css",
+    "dev": "tailwindcss -i ./src/styles/global.css -o ./dist/index.css --watch",
+    "build": "tailwindcss -i ./src/styles/global.css -o ./dist/index.css",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@stba/types": "*",
     "@stba/eslint-config": "*",
     "@stba/typescript-config": "*",
     "@turbo/gen": "^2.5.0",
