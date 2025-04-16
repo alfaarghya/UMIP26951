@@ -11,6 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@stba/types": "*",
     "@stba/utils": "*",
     "@stba/ui": "*",
     "@tailwindcss/postcss": "^4.0.6",
