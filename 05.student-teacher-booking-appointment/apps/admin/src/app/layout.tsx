@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import '@stba/ui/styles.css'
+import Navbar from "@stba/ui/Navbar";
+import { Role } from "@stba/types/client"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Navbar appName={Role.ADMIN} className="text-red-600" />
         {children}
       </body>
     </html>

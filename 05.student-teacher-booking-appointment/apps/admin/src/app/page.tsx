@@ -1,13 +1,12 @@
-import { Button } from "@stba/ui/button";
+import Footer from "@stba/ui/Footer";
+import Hero from "@stba/ui/Hero";
 
 const Home = () => {
   return (
-    <>
-      <h1 className="bg-red-400 h-24 w-full flex justify-center items-center text-4xl"> Admin panel</h1>
-      <div className="w-full flex justify-center">
-        <Button appName="admin" className="bg-blue-400" />
-      </div>
-    </>
+    <div className="h-screen bg-red-400 flex flex-col justify-evenly">
+      <Hero />
+      <Footer />
+    </div>
   );
 }
 
