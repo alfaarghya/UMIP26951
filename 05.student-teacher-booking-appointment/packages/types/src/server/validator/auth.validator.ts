@@ -2,9 +2,9 @@ import { z } from "zod";
 
 //registration validator for students
 export const StudentRegisterSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(6),
+  name: z.string().nonempty("Name is required"),
+  email: z.string().email("Email is required").nonempty("can't leave email empty"),
+  password: z.string().min(8, "Password need at least 8 char long").nonempty("Password is required"),
 });
 
 //set password validator for teacher
