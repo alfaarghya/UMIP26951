@@ -9,5 +9,10 @@ export interface NavBarProps {
 export interface LoginProps {
   role: Role
 }
-
-
+export interface RegistrationProps {
+  role: Role
+}
+export interface UpdatePasswordProps {
+  role: Role,
+  teacherId?: string
+}
