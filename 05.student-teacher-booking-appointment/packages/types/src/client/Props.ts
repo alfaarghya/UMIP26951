@@ -6,4 +6,8 @@ export interface NavBarProps {
   className: string
 };
 
+export interface LoginProps {
+  role: Role
+}
+
 
