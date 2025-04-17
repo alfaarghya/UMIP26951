@@ -97,7 +97,7 @@ export const setTeacherPassword = async (req: Request, res: Response) => {
       res.status(Status.Forbidden).json({
         status: Status.Forbidden,
         statusMessage: StatusMessages[Status.Forbidden],
-        message: "Access denied",
+        message: "Please Enter your teacher Email, to set password",
       });
       return;
     }
