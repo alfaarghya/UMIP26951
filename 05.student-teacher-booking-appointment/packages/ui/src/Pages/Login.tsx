@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import api from '@stba/utils/api';
 import { UserLoginSchema } from '@stba/types/serverTypes';
-import { LoginProps, UserLoginType } from '@stba/types/client';
+import { LoginProps, Role, UserLoginType } from '@stba/types/client';
 import { useUser } from '../context/UserContext';
 
 const LoginPage = ({ role, }: LoginProps) => {
@@ -49,7 +49,7 @@ const LoginPage = ({ role, }: LoginProps) => {
 
   return (
     <div className="h-screen flex flex-col justify-center items-center max-w-md mx-auto mt-24 bg-white p-8 shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Log In</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-center">Log In <p className='text-sm'>{role}</p></h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
@@ -86,6 +86,22 @@ const LoginPage = ({ role, }: LoginProps) => {
           {isSubmitting ? 'Logging in...' : 'Log In'}
         </button>
       </form>
+      {role === Role.STUDENT && (
+        <p className="text-sm text-center mt-4">
+          Student need to Register First.{" "}
+          <a href="/register" className="text-blue-600 hover:underline">
+            Register
+          </a>
+        </p>
+      )}
+      {role === Role.TEACHER && (
+        <p className="text-sm text-center mt-4">
+          Teacher need to Update Password First.{" "}
+          <p className="text-blue-600 hover:underline">
+            Link will be provided by admin
+          </p>
+        </p>
+      )}
     </div>
   );
 };
