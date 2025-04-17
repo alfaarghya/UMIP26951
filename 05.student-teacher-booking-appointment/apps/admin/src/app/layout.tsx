@@ -4,6 +4,8 @@ import "./globals.css";
 import '@stba/ui/styles.css'
 import Navbar from "@stba/ui/Navbar";
 import { Role } from "@stba/types/client"
+import Toast from "@stba/ui/Toast";
+import { UserProvider } from "@stba/ui/context/UserContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,8 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Navbar appName={Role.ADMIN} className="text-red-600" />
-        {children}
+        <UserProvider>
+          <Navbar appName={Role.ADMIN} className="text-red-600" />
+          <main className="h-screen flex flex-col justify-between pt-20">
+            {children}
+          </main>
+        </UserProvider>
+        <Toast />
       </body>
     </html>
   );

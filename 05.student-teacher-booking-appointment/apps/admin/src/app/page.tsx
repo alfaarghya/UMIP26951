@@ -3,7 +3,7 @@ import Hero from "@stba/ui/Hero";
 
 const Home = () => {
   return (
-    <div className="h-screen bg-red-400 flex flex-col justify-evenly">
+    <div className="h-screen flex flex-col justify-evenly">
       <Hero />
       <Footer />
     </div>
