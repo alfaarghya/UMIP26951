@@ -4,3 +4,10 @@ export enum Role {
   TEACHER = "TEACHER",
   ADMIN = "ADMIN",
 }
+
+//registration status
+export enum Status {
+  APPROVED = "APPROVED",
+  PENDING = "PENDING",
+  DENIED = "DENIED"
+}
