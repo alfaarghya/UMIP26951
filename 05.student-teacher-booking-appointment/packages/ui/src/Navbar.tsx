@@ -5,18 +5,24 @@ import { useRouter } from "next/navigation";
 import { NavBarProps } from "@stba/types/client"
 import { toast } from 'sonner';
 import { useUser } from './context/UserContext';
+import api from '@stba/utils/api';
 
 const Navbar = ({ className, appName }: NavBarProps) => {
   const router = useRouter();
   const { name, setName } = useUser();
 
-  const logout = () => {
-    localStorage.removeItem('name');
-    localStorage.removeItem('role');
-    document.cookie = 'token=; Max-Age=0; path=/';
-    toast.success('Logged out successfully');
-    setName('');
-    router.push('/login');
+  const logout = async () => {
+    try {
+      const res = await api.post("/auth/logout");
+      localStorage.removeItem('name');
+      localStorage.removeItem('role');
+      toast.success(res.data.message || 'Logged out successfully');
+      setName('');
+      router.push('/login');
+    } catch (err: any) {
+      toast.error("can't logout")
+    }
+
   };
 
   return (
