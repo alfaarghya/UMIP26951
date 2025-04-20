@@ -48,7 +48,7 @@ const LoginPage = ({ role, }: LoginProps) => {
   };
 
   return (
-    <div className="h-screen flex flex-col justify-center items-center max-w-md mx-auto mt-24 bg-white p-8 shadow-md rounded-lg">
+    <div className="h-screen flex flex-col justify-center items-center max-w-md mx-auto bg-white p-8 shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Log In <p className='text-sm'>{role}</p></h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
