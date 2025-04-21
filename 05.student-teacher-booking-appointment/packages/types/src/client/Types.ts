@@ -27,3 +27,11 @@ export interface Message {
   senderId: string;
   receiverId: string;
 }
+
+export interface Teacher {
+  id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  department: string | null;
+}
