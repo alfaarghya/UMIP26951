@@ -1,4 +1,4 @@
-import { Role, Status } from "./enum";
+import { AppointmentStatus, Role, Status } from "./enum";
 
 //navbar props
 export interface NavBarProps {
@@ -18,4 +18,7 @@ export interface UpdatePasswordProps {
 }
 export interface StudentStatusProps {
   status: Status
+}
+export interface TeacherAppointmentProps {
+  status: AppointmentStatus;
 }
