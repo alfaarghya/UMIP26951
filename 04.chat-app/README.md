@@ -1,4 +1,4 @@
-![chat-app](./public/chat-app-demo.png)
+![architecture](./public/architecture.png)
 
 ### Features
 
@@ -97,35 +97,39 @@ password: password789
 
 ### Demos
 
-#### 1. Sign up page
+#### 1. landing page
+
+![landing](./public/chat-app-demo.png)
+
+#### 2. Sign up page
 
 ![signup-1](./public/signup-1.png)
 ![signup-1](./public/signup-2.png)
 
-#### 2. Sign in page
+#### 3. Sign in page
 
 ![signin](./public/signin.png)
 
-#### 3. Chat page
+#### 4. Chat page
 
 ![chat](./public/chat.png)
 
-#### 4. create room page
+#### 5. create room page
 
 ![create-room](./public/create-room.png)
 
-#### 5. join room page
+#### 6. join room page
 
 ![join-room](./public/join-room.png)
 
-#### 6. room chat page
+#### 7. room chat page
 
 ![room-chat](./public/room-chat.png)
 
-#### 7. Search by username
+#### 8. Search by username
 
 ![search](./public/search-user.png)
 
-#### 8. inbox chat
+#### 9. inbox chat
 
 ![dm-chat](./public/dm-chat.png)
