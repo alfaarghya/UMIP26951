@@ -35,3 +35,12 @@ export interface Teacher {
   subject: string | null;
   department: string | null;
 }
+
+export interface StudentAppointment {
+  id: string;
+  teacherId: string;
+  studentId: string;
+  status: AppointmentStatus;
+  date: string;
+  teacher: Teacher;
+};
