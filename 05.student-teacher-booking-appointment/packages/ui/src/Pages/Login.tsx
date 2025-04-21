@@ -96,12 +96,12 @@ const LoginPage = ({ role, }: LoginProps) => {
       )}
       {/* additional link for teacher */}
       {role === Role.TEACHER && (
-        <p className="text-sm text-center mt-4">
+        <span className="text-sm text-center mt-4">
           Teacher need to Update Password First.{" "}
           <p className="text-blue-600 hover:underline">
             Link will be provided by admin
           </p>
-        </p>
+        </span>
       )}
     </div>
   );
