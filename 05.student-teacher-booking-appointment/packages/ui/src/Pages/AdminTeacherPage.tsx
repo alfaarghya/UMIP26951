@@ -5,16 +5,9 @@ import { AddTeacherSchema, UpdateTeacherSchema } from '@stba/types/serverTypes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { AddTeacherType, UpdateTeacherType } from '@stba/types/client';
+import { AddTeacherType, Teacher, UpdateTeacherType } from '@stba/types/client';
 import api from '@stba/utils/api';
 
-type Teacher = {
-  id: string;
-  name: string;
-  email: string;
-  department: string | null;
-  subject: string | null;
-};
 
 export default function AdminTeacherPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -44,6 +37,7 @@ export default function AdminTeacherPage() {
     fetchTeachers();
   }, []);
 
+  //get teachers data
   const fetchTeachers = async () => {
     try {
       const res = await api.get('/admin/teacher');
@@ -54,6 +48,7 @@ export default function AdminTeacherPage() {
     }
   };
 
+  //add a teacher
   const onAddSubmit = async (data: AddTeacherType) => {
     try {
       await api.post('/admin/teacher', data);
@@ -66,6 +61,7 @@ export default function AdminTeacherPage() {
     }
   };
 
+  //update teacher data
   const onUpdateSubmit = async (data: UpdateTeacherType) => {
     try {
       await api.put(`/admin/teacher/${editTeacher?.id}`, data);
@@ -79,6 +75,7 @@ export default function AdminTeacherPage() {
     }
   };
 
+  //remove teacher
   const handleDelete = async (id: string) => {
     try {
       await api.delete(`/admin/teacher/${id}`);

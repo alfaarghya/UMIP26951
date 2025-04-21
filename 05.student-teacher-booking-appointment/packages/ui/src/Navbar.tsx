@@ -11,6 +11,7 @@ const Navbar = ({ className, appName }: NavBarProps) => {
   const router = useRouter();
   const { name, setName } = useUser();
 
+  //logout
   const logout = async () => {
     try {
       const res = await api.post("/auth/logout");

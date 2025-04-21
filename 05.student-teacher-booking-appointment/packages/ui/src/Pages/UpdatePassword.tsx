@@ -26,11 +26,9 @@ const UpdatePasswordPage = ({ role }: UpdatePasswordProps) => {
     },
   });
 
+  //update password request to password route
   const onSubmit = async (data: SetPasswordType) => {
     try {
-
-      console.log("hello");
-
       const res = await api.post('/auth/teacher/password', { ...data, teacherId: id });
 
       if (res.status === 200) {

@@ -42,6 +42,7 @@ const CreateAppointmentPage = () => {
     };
   }, [name, subject, department]);
 
+  //book appointment
   const handleBook = async () => {
     if (!selectedTeacher || !date) return;
     setIsSubmitting(true);

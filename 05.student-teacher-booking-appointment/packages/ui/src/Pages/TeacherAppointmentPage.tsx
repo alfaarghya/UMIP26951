@@ -14,6 +14,7 @@ const TeacherAppointmentPage = ({ status }: TeacherAppointmentProps) => {
   const [messageContent, setMessageContent] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
+  //fetch appointments by STATUS
   const fetchAppointments = async () => {
     try {
       const res = await api.get(`/teacher/appointment/${status}`);
@@ -26,6 +27,7 @@ const TeacherAppointmentPage = ({ status }: TeacherAppointmentProps) => {
     }
   };
 
+  //update the status
   const handleUpdateStatus = async (id: string, action: AppointmentStatus) => {
     try {
       const res = await api.put(`/teacher/appointment/${id}`, { action });
@@ -47,6 +49,7 @@ const TeacherAppointmentPage = ({ status }: TeacherAppointmentProps) => {
     }
   };
 
+  //send message if appointment was APPROVED
   const handleSendMessage = async () => {
     if (!modalId || !selectedStudentId || !messageContent.trim()) return;
     try {

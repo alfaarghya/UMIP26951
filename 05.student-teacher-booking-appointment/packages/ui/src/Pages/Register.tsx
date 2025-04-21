@@ -19,6 +19,7 @@ const RegisterPage = ({ role }: RegistrationProps) => {
     resolver: zodResolver(StudentRegisterSchema),
   });
 
+  //student register request to register route
   const onSubmit = async (data: StudentRegisterType) => {
     try {
       const res = await api.post('/auth/student/register', data);

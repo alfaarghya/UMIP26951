@@ -24,10 +24,9 @@ const LoginPage = ({ role, }: LoginProps) => {
     },
   });
 
+  //send a post request to login route
   const onSubmit = async (data: UserLoginType) => {
     try {
-      console.log("hello");
-
       const res = await api.post('/auth/login', { ...data, role });
 
       if (res.status === 200) {
@@ -86,6 +85,7 @@ const LoginPage = ({ role, }: LoginProps) => {
           {isSubmitting ? 'Logging in...' : 'Log In'}
         </button>
       </form>
+      {/* additional link for student */}
       {role === Role.STUDENT && (
         <p className="text-sm text-center mt-4">
           Student need to Register First.{" "}
@@ -94,6 +94,7 @@ const LoginPage = ({ role, }: LoginProps) => {
           </a>
         </p>
       )}
+      {/* additional link for teacher */}
       {role === Role.TEACHER && (
         <p className="text-sm text-center mt-4">
           Teacher need to Update Password First.{" "}

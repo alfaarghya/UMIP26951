@@ -11,6 +11,7 @@ const StudentStatusPage = ({ status }: StudentStatusProps) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
 
+  //fetch student list based on STATUS
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -24,6 +25,7 @@ const StudentStatusPage = ({ status }: StudentStatusProps) => {
     }
   };
 
+  //change the status of student
   const handleStatusChange = async (studentId: string, action: Status) => {
     try {
       const payload = StudentApprovalSchema.parse({ studentId, action });

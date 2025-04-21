@@ -5,13 +5,13 @@ import api from '@stba/utils/api';
 import { AppointmentStatus, Message, StudentAppointment } from '@stba/types/client';
 
 
-
 const StudentAppointments = () => {
   const [appointments, setAppointments] = useState<StudentAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [messageModal, setMessageModal] = useState<null | string>(null); // appointmentId
   const [messages, setMessages] = useState<Message[]>([]);
 
+  //fetch all appointments at beginning
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -27,6 +27,7 @@ const StudentAppointments = () => {
     fetchAppointments();
   }, []);
 
+  //cancel an appointment by student
   const handleCancel = async (id: string) => {
     try {
       await api.delete(`/student/appointment/${id}`);
@@ -38,6 +39,7 @@ const StudentAppointments = () => {
     }
   };
 
+  //load messages for a APPROVED appointment
   const loadMessages = async (appointmentId: string) => {
     try {
       const res = await api.get(`/student/messages/${appointmentId}`);
