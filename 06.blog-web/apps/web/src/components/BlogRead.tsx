@@ -5,7 +5,7 @@ import { api } from "../utils/api";
 import { BlogCardType, CommentType } from "@blog-web/types/client";
 
 
-const BlogRead = ({ username, id, title, content }: BlogCardType) => {
+const BlogRead = ({ username, id, title, content, date }: BlogCardType) => {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [newComment, setNewComment] = useState("");
   const currentUser = localStorage.getItem("username");
@@ -44,7 +44,7 @@ const BlogRead = ({ username, id, title, content }: BlogCardType) => {
       {/* Main Blog Content */}
       <div className="col-span-8">
         <div className="text-2xl font-extrabold mb-5">{title}</div>
-        <div className="text-xl mb-8">{content}</div>
+        <div className="text-xl mb-2">{content}</div>
 
         {/* Comment Input */}
         {currentUser && (
@@ -87,14 +87,16 @@ const BlogRead = ({ username, id, title, content }: BlogCardType) => {
       </div>
 
       {/* Sidebar */}
-      <div className="col-span-4 ml-6">
+      <div className="col-span-4 ml-6 ">
         <div className="mb-2">Author</div>
         <div className="mb-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Avatar username={username} />
             <div className="font-bold text-gray-600">@{username}</div>
           </div>
-          <div className="text-gray-400">Hii I am a user of Blog-Web</div>
+          <div className="text-xs text-gray-600 mt-2 ml-8">
+            {new Date(date).toLocaleString()}
+          </div>
         </div>
 
         {username === currentUser && (

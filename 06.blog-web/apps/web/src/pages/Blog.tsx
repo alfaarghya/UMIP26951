@@ -6,6 +6,8 @@ import BlogRead from "../components/BlogRead";
 const Blog = () => {
   const { id } = useParams(); //blog id from URL params
   const { loading, blog } = useBlog({ id: id || "" }); //retrieve blog using custom hook
+  console.log(blog);
+
 
   // can't load the blog
   if (loading) {
@@ -26,6 +28,7 @@ const Blog = () => {
           username={blog.author.username}
           title={blog.title}
           content={blog.content}
+          date={blog.createdAt}
         />
       </div>
     </div>

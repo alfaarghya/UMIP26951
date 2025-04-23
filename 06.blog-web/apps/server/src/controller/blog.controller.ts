@@ -92,6 +92,7 @@ export const getBlog = async (req: Request, res: Response) => {
       select: {
         title: true,
         content: true,
+        createdAt: true,
         id: true,
         author: {
           select: {
