@@ -40,6 +40,13 @@ export const createComment = async (req: Request, res: Response) => {
         blogId,
         userId,
       },
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
 
     res.status(Status.Success).json({
