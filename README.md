@@ -587,3 +587,28 @@ password: password12345 #password is same for each and every users
 
 ![signin](06.blog-web/public/signin.png)
 ![blogs4](06.blog-web/public/blogs4.png)
+
+# 07.portfolio(additional project)
+
+it's a additional project, So I designed it according to my style to showcase my frontend skills along side with my backend skills
+
+### visit the site
+
+[https://alfaarghyadev.vercel.app/](`https://alfaarghyadev.vercel.app/`)
+
+### Run the App locally
+
+```bash
+#go to the project
+cd 07.portfolio
+
+#install dependency
+yarn install
+
+#run the project
+yarn run dev
+```
+
+### Demos
+
+![landing-page](07.portfolio/public/snapshot.png)
