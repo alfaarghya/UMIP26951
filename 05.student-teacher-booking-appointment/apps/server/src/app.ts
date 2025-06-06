@@ -10,7 +10,20 @@ import teacherRoutes from "./routes/teacher.route";
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser()); //parse the cookies
 app.use(checkRoutes); // check all routes 
